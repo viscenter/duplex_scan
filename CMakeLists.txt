@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-PROJECT(Viz)
+PROJECT(DuplexScan)
 
 #platform is set corresponding to the directories 
 IF(UNIX)
@@ -20,7 +20,7 @@ ENDIF(UNIX)
 
 IF(DEBUG)
 	MESSAGE("______Building DEBUG\(${PLATFORM}\) version______")
-	SET(CMAKE_CXX_FLAGS_DEBUG "-O3 -Wall -DDEBUG -g")
+	SET(CMAKE_CXX_FLAGS_DEBUG "-Wall -DDEBUG -g")
 	SET(CMAKE_BUILD_TYPE "Debug")
 ELSE(DEBUG)
 	MESSAGE("______Building RELEASE\(${PLATFORM}\) version______")
@@ -30,8 +30,8 @@ ENDIF(DEBUG)
 include(UseDoxygen OPTIONAL)
 
 SET(CMAKE_INCLUDE_CURRENT_DIR OFF)
-SET(CMAKE_VERBOSE_MAKEFILE OFF)
-include_directories(${Viz_SOURCE_DIR})
+SET(CMAKE_VERBOSE_MAKEFILE ON)
+include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 
 add_subdirectory(external/platform/${PLATFORM})
 add_subdirectory(platform/${PLATFORM})
