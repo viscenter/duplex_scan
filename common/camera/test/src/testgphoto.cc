@@ -9,9 +9,10 @@ int main(int argv, char **argc)
 	Camera *gCamera;
 	GPContext *gContext = gp_context_new (); /* see context.c */
 	gp_camera_new (&gCamera);
-	if( gp_camera_init(gCamera, gContext)  < GP_OK )
+	int err;
+	if( (err= gp_camera_init(gCamera, gContext))  != GP_OK )
 	{
-		cerr<<"\nFailed to initialize camera ";
+		cerr<<"\nFailed to initialize camera ("<<err<<")\n";
 		gp_camera_free (gCamera);
 		return 1;
 	}
@@ -20,7 +21,7 @@ int main(int argv, char **argc)
 	CameraText	text;
 	if(gp_camera_get_summary (gCamera, &text, gContext) < GP_OK)
 	{
-		cerr<<"Camera failed retrieving summary.\n";
+		cerr<<"Camera failed retrieving summary.("<<err<<")\n";
 		gp_camera_free (gCamera);
 		return 1;
 	}
@@ -35,7 +36,7 @@ int main(int argv, char **argc)
 	}
 	else
 	{
-		cerr<<"\nFailed finalization. Camera not initialized correctely.";
+		cerr<<"\nFailed finalization. Camera not initialized correctly.("<<err<<")\n";
 		return 1;
 	}
 
