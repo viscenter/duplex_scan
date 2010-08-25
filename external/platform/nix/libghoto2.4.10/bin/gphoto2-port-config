@@ -3,7 +3,7 @@
 # leave these definitions here
 # they are required for correct interpolation of
 # ${exec_prefix}/lib and ${prefix}/include later on
-prefix="/home/dc/sandbox/viz/external/bin/libghoto2.4.10/"
+prefix="/home/dc/sandbox/viz/external/platform/nix/libghoto2.4.10/"
 exec_prefix="${prefix}"
 
 usage()
@@ -42,7 +42,7 @@ while test $# -gt 0; do
 	;;
 
     --prefix)
-	echo "/home/dc/sandbox/viz/external/bin/libghoto2.4.10/"
+	echo "/home/dc/sandbox/viz/external/platform/nix/libghoto2.4.10/"
 	;;
 
     --version)
