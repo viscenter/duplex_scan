@@ -117,7 +117,7 @@ IplImage* getIplImageFromPFM(const string& filename)
 		fin.close();
 	}
 	getline(fin, header);
-	stringstream ss(header);
+	istringstream ss(header);
 	ss >> width >> height;
 
 	getline(fin, header);
