@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
-
 PROJECT(DuplexScan)
+#opencv2.0 findpackage script
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/buildsys)
 
 #platform is set corresponding to the directories 
 IF(UNIX)
