@@ -3,6 +3,7 @@
 //include <common/camera/src/camerafirewireimpl.h>
 #include <string>
 #include <iostream>
+#include <vector>
 #include <opencv/cv.h>
 
 using namespace std;

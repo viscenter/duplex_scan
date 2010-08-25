@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include "boost/filesystem.hpp" 
 
 #define TEST 0
@@ -117,7 +118,7 @@ IplImage* getIplImageFromPFM(const string& filename)
 		fin.close();
 	}
 	getline(fin, header);
-	istringstream ss(header);
+	stringstream ss(header);
 	ss >> width >> height;
 
 	getline(fin, header);
