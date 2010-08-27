@@ -34,9 +34,7 @@ include(UseDoxygen OPTIONAL)
 
 SET(CMAKE_INCLUDE_CURRENT_DIR OFF)
 SET(CMAKE_VERBOSE_MAKEFILE ON)
-include_directories(${extOpenCVPath}/include)
-link_directories(${extOpenCVPath}/lib)
-
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 add_subdirectory(external/platform/${PLATFORM})
 add_subdirectory(platform/${PLATFORM})
 add_subdirectory(common/platform/${PLATFORM})
