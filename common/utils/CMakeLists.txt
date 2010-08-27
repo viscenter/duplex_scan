@@ -1,6 +1,18 @@
 PROJECT(Utilities)
 
-#add_subdirectory(src)
-add_subdirectory(tests)
-
 file(COPY resources DESTINATION .)
+
+FIND_PACKAGE(Boost REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS filesystem REQUIRED)
+
+INCLUDE_DIRECTORIES( ${extOpenCV2_1_INCLUDE_PATH} )
+LINK_DIRECTORIES( ${extOpenCV2_1_LIB_PATH} )
+
+add_executable(hdrRead tests/src/hdrRead.cc)
+target_link_libraries( hdrRead cv highgui)
+
+add_executable(helloWorld tests/src/helloWorld.cc)
+target_link_libraries( helloWorld cv highgui)
+
+add_executable(radiancetest tests/src/radiancetest.cc)
+target_link_libraries( radiancetest cv highgui ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY})

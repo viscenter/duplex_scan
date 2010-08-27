@@ -5,6 +5,6 @@ LINK_DIRECTORIES( ${extOpenCV2_1_LIB_PATH} )
 add_library(userparams src/userparamsimpl.cc)
 
 add_executable(typeTest tests/src/typeTest.cc) 
-target_link_libraries( typeTest userparams ${extOpenCV2_1_LIBS})
+target_link_libraries( typeTest userparams cv highgui)
 
 add_executable(singletonTest tests/src/singletonTest.cc) 
