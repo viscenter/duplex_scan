@@ -1,6 +1,6 @@
 
 #include <common/camera/src/camerapasimpl.h>
-#include <common/camera/src/camerafirewireimpl.h>
+//#include <common/camera/src/camerafirewireimpl.h>
 #include <string>
 #include <iostream>
 #include <vector>
@@ -14,7 +14,7 @@ int main(int argc, char ** argv)
 
 	bool failure = false;
 	vector<ICamera*> cameras;
-	cameras.push_back( CameraFirewireImpl::getInstance());
+	//cameras.push_back( CameraFirewireImpl::getInstance());
 	cameras.push_back( CameraPASImpl::getInstance());
 
 	for(vector<ICamera*>::iterator it = cameras.begin(); it != cameras.end();

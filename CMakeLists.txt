@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 PROJECT(DuplexScan)
 #opencv2.0 findpackage script
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/buildsys)
+#SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/buildsys)
 
 #platform is set corresponding to the directories 
 IF(UNIX)
@@ -34,7 +34,8 @@ include(UseDoxygen OPTIONAL)
 
 SET(CMAKE_INCLUDE_CURRENT_DIR OFF)
 SET(CMAKE_VERBOSE_MAKEFILE ON)
-include_directories(${${PROJECT_NAME}_SOURCE_DIR})
+include_directories(${extOpenCVPath}/include)
+link_directories(${extOpenCVPath}/lib)
 
 add_subdirectory(external/platform/${PLATFORM})
 add_subdirectory(platform/${PLATFORM})

@@ -1,5 +1,4 @@
 PROJECT(VizCamera)
-FIND_PACKAGE(OpenCV REQUIRED)
 
 #MESSAGE("${gphoto2LibPath} -> gphoto2LibPath")
 #MESSAGE("${gphoto2PortLibPath} -> gphoto2PortLibPath")
@@ -12,7 +11,7 @@ INCLUDE_DIRECTORIES( ${gphoto2IncPath} )
 LINK_DIRECTORIES( ${gphoto2LibPath} ${gphoto2PortLibPath} )
 
 add_executable(cameraTest test/src/testCamera.cc) 
-target_link_libraries( cameraTest userparams vizcamera ${OpenCV_LIBRARIES})
+target_link_libraries( cameraTest userparams vizcamera ${extOpenCV2.1_LIBS})
 
 add_executable(testgphoto test/src/testgphoto.cc) 
-target_link_libraries( testgphoto userparams vizcamera ${OpenCV_LIBRARIES})
+target_link_libraries( testgphoto userparams vizcamera )

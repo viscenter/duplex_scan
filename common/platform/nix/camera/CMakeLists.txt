@@ -18,5 +18,6 @@ INCLUDE_DIRECTORIES( ${gphoto2IncPath} )
 LINK_DIRECTORIES( ${gphoto2LibPath} ${gphoto2PortLibPath} )
 
 MESSAGE("Added ...  ${PROJECT_NAME} code in  ${PROJECT_SOURCE_DIR}")
-add_library(vizcamera src/camerapasimpl.cc src/camerafirewireimpl.cc)
-target_link_libraries(vizcamera gphoto2 gphoto2_port m dc1394)
+#add_library(vizcamera src/camerapasimpl.cc src/camerafirewireimpl.cc)
+add_library(vizcamera src/camerapasimpl.cc)
+target_link_libraries(vizcamera gphoto2 gphoto2_port m )
