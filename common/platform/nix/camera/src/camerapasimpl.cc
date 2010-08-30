@@ -165,8 +165,6 @@ bool CameraPASImpl::getCameraConfigValue(const string& key, string &value)
 	}
 
 	value = val;
-
-
 	return true;
 }
 
@@ -179,13 +177,31 @@ bool CameraPASImpl::setShutterSpeed(UserParams &p)
 			dynamic_cast<UserParamsSetShutterImpl&>(p);
 		string key("shutterspeed"), cur;
 #if DEBUG
-		cout <<"\nSetting shutter to :"<<param.getValue() <<"\"";
+		cout <<"\nSetting shutter to :"<<param.getValue();
 		getCameraConfigValue(key, cur);
 		cout << " current value :"<<cur <<"\"";
 #endif
-		cur = param.getValue();
-		return setCameraConfigValue(key,cur);
-		
+		if(param.getValue() == cur)
+		{
+			cerr<<"\nNot changing shutterspeed. New value is same as old";
+			return true;
+		}
+
+		if( !setCameraConfigValue(key, param.getValue()))
+		{
+			cerr<<"\nError occured changing shutter value ";
+			return false;
+		}
+
+		if(param.getValue() == cur )
+		{
+			//cerr<<"\n\""<<param.getValue()<<"\" == \""<<cur<<"\"";
+			cerr<<"\nfailed to change shutterspeed";
+			return false;
+		}
+
+		cout <<"\nShutter speed changed"<<param.getValue();
+		return true;
 	}
 	catch(bad_cast& b)
 	{
@@ -195,25 +211,23 @@ bool CameraPASImpl::setShutterSpeed(UserParams &p)
 
 	
 }
-bool CameraPASImpl::setCameraConfigValue(const string& key, string &value)
+bool CameraPASImpl::setCameraConfigValue(const string& key, string value)
 {
 	if(key.empty())
 	{
 		cout <<"\nsetCameraConfigValue(), invalid config key value. ";
 		return false;
 	}
-
 	CameraWidget      *widget = NULL, *child = NULL;
    CameraWidgetType  type;
    int         ret;
-   char*        val;
 
-   ret = gp_camera_get_config(gCamera, &widget, gContext);
+   ret = gp_camera_get_config (gCamera, &widget, gContext);
    if (ret < GP_OK) {
-      cerr<<"\ngetCameraConfigValue failed("<< ret <<")";
+      cerr<< "\ncamera_get_config failed:("<<ret<<")";;
       return false;
    }
-
+	
 	ret = gp_widget_get_child_by_name (widget, key.c_str(), &child);
    if (ret < GP_OK)
 	{
@@ -222,7 +236,6 @@ bool CameraPASImpl::setCameraConfigValue(const string& key, string &value)
 
    if (ret < GP_OK) {
       cerr<<"\ngetCameraConfigValue failed lookup("<< ret <<")";
-		gp_widget_free(widget);
 		return false;
    }
 
@@ -230,77 +243,39 @@ bool CameraPASImpl::setCameraConfigValue(const string& key, string &value)
     * has already. If you are not sure, better check. */
    ret = gp_widget_get_type (child, &type);
    if (ret < GP_OK) {
-      cerr<<"\nwidgetGetType failed get widget type("<< ret <<")";
-		gp_widget_free(widget);
+      cerr<<"\nwidget get type failed:("<<ret<<")";
+	   gp_widget_free (widget);
 		return false;
    }
    switch (type) {
         case GP_WIDGET_MENU:
-#if DEBUG
-			cout <<endl << "menu type";
-#endif
-      break;
         case GP_WIDGET_RADIO:
-#if DEBUG
-			cout <<endl << "Radio type";
-#endif
-      break;
         case GP_WIDGET_TEXT:
-#if DEBUG
-			cout <<endl << "text type";
-#endif
       break;
    default:
-      ret = GP_ERROR_BAD_PARAMETERS;
-      cerr<<"\nwidgetGetType bad widget type("<< ret <<")";
-		gp_widget_free(widget);
+      cerr<<"\nwidget has bad type("<<type<<")";
+	   gp_widget_free (widget);
 		return false;
    }
 
-	const char* choiceName;
-   ret = gp_widget_get_name (child, &choiceName);
-	cerr<<"\nName "<<choiceName;
-	/*
-   ret = gp_widget_get_choice (child, choice, &choiceName);
+   /* This is the actual set call. Note that we keep
+    * ownership of the string and have to free it if necessary.
+    */
+   ret = gp_widget_set_value (child, value.c_str());
    if (ret < GP_OK) {
-      cerr<<"\nwidgetGetChoice failed get choice ("<< ret <<")";
+      cerr<<"\ncould not set widget value ("<<ret<<")";
+	   gp_widget_free (widget);
 		return false;
    }
-	*/
-   ret = gp_widget_get_value (child, &val);
+   /* This stores it on the camera again */
+   ret = gp_camera_set_config (gCamera, widget, gContext);
    if (ret < GP_OK) {
-      cerr<<"\nwidgetgettValue failed to get widget value ("<< ret <<")";
-	   gp_widget_free(widget);
-		return false;
-   }
-	cout <<"\n\""<<choiceName<<"\"-> "<<val;
-	const char* setVal =value.c_str();
-	//cout <<"\n\""<<choiceName<<"\"-> "<<choice;
-	//val =  static_cast<int>(param.getValue());
-   ret = gp_widget_set_value (child, &setVal);
-   if (ret < GP_OK) {
-      cerr<<"\nwidgetSetValue failed to set widget value ("<< ret <<")";
-		gp_widget_free(widget);
+      cerr<<"\ncamera set config failed ("<<ret<<")";
+	   gp_widget_free (widget);
 		return false;
    }
 
-   ret = gp_camera_set_config(gCamera, widget, gContext);
-   if (ret < GP_OK) {
-      cerr<<"\ngetSetConfig failed to save widget value ("<< ret <<")";
-	   gp_widget_free(widget);
-		return false;
-   }
-
-	//cout <<"\n\""<<choiceName<<"\"-> "<<choice;
-   ret = gp_widget_get_value (child, &val);
-   if (ret < GP_OK) {
-      cerr<<"\nwidgetgettValue failed to get widget value ("<< ret <<")";
-	   gp_widget_free(widget);
-		return false;
-   }
-	cout <<"\n\""<<choiceName<<"\"-> "<<val;
-	gp_widget_free(widget);
-	return (value == val) ;
+	return true ;
 }
 
 std::string  CameraPASImpl::getName() const

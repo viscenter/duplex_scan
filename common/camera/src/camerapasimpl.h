@@ -20,7 +20,7 @@ namespace viz
 			virtual ICamera::CameraType getType() const;
 			virtual ~CameraPASImpl();
 			bool getCameraConfigValue(const std::string& key,std::string &value);
-			bool setCameraConfigValue(const std::string& key,std::string &value);
+			bool setCameraConfigValue(const std::string& key,std::string value);
 
 		protected:
 			CameraPASImpl();
