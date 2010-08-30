@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <typeinfo>
+#include <fcntl.h>
 
 #include <common/camera/src/camerapasimpl.h>
 #include <common/type/src/userparamsimpl.h>
@@ -86,16 +87,81 @@ bool CameraPASImpl::getImage(UserParams &p)
 		UserParamsGetImageImpl &param = dynamic_cast<UserParamsGetImageImpl&>(p);
 #if DEBUG
 		cout <<"\nGetting image from camera:";
-		if(param.getFilename().empty())
+		if(!param.getFilename().empty())
 			cout <<"\n\tas a saved file \"" <<param.getFilename() <<"\"";
-		else if( param.getImage() !=0 )
+		if( *param.getImage() !=0 )
 			cout <<"\n\t as an IplImage";
 #endif
-		if(param.getFilename().empty() && param.getImage() ) 
+		if(param.getFilename().empty() && *param.getImage()  ) 
 		{
-			cout <<"\nGetImage(), invalid parameter. Specify name or image ";
+			cerr <<"\nGetImage(), invalid parameter. Specify name or image ";
 			return false;
 		}
+
+		string cFormat;
+		if(!getCameraConfigValue("imageformat", cFormat))
+		{
+			cerr <<"\nGetImage(), failed to get image format ";
+			return false;
+		}
+#if DEBUG
+		cout <<"\nCurrent image format :" <<cFormat;
+#endif
+		bool cameraRAWFormat = false;
+		if(cFormat.find_last_of("RAW") == string::npos ||
+			cFormat.find_last_of("RAW") == string::npos)
+			cameraRAWFormat = true;
+
+		bool saveRawFormat = false;
+		if(param.getFilename().find_last_of(".CR2") == string::npos ||
+			param.getFilename().find_last_of(".cr2") == string::npos ||
+			param.getFilename().find_last_of(".RAW") == string::npos ||
+			param.getFilename().find_last_of(".raw") == string::npos)
+		{
+			saveRawFormat = true;
+			cout <<"\nSaverawformat";
+		}
+		else
+			cout <<"\n!Saverawformat";
+
+
+		
+		string cameraSaveFile("foo.jpg");
+		if(saveRawFormat && *param.getImage() != 0)
+		{
+			cvReleaseImage(param.getImage());
+			*param.getImage() = 0;
+			cameraSaveFile = "foo.raw";
+		}
+
+		if(saveRawFormat && param.getFilename().empty())
+		{
+			cerr <<"\nGetImage():If saving raw image format, specify a filename";
+			return false;
+		}
+
+		CameraFile *canonfile;
+		CameraFilePath camera_file_path;
+			
+		cout <<"Capturing.\n";
+
+		/* NOP: This gets overridden in the library to /capt0000.jpg */
+		strcpy(camera_file_path.folder, "/");
+		strcpy(camera_file_path.name, cameraSaveFile.c_str());
+
+		int retval = gp_camera_capture(gCamera, GP_CAPTURE_IMAGE, &camera_file_path, gContext);
+		
+		int fd = open(param.getFilename().c_str(), O_CREAT | O_WRONLY, 0644);
+		retval = gp_file_new_from_fd(&canonfile, fd);
+		retval = gp_camera_file_get(gCamera, camera_file_path.folder, camera_file_path.name,
+				  GP_FILE_TYPE_NORMAL, canonfile, gContext);
+			
+		cerr<<"\nDeleting.\n";
+		retval = gp_camera_file_delete(gCamera, camera_file_path.folder, camera_file_path.name,
+				gContext);
+			
+		gp_file_free(canonfile);
+		
 	}
 	catch(bad_cast& b)
 	{

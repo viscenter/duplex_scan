@@ -14,7 +14,7 @@ namespace viz
 			UserParamsGetImageImpl(std::string& filename, IplImage **image);
 			virtual ~UserParamsGetImageImpl();
 			std::string getFilename() const;
-			IplImage* getImage() const;
+			IplImage** getImage();
 
 		
 		private:

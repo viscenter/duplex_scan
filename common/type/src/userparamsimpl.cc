@@ -25,9 +25,9 @@ string UserParamsGetImageImpl::getFilename() const
 	return filename;
 }
 
-IplImage* UserParamsGetImageImpl::getImage() const
+IplImage** UserParamsGetImageImpl::getImage() 
 {
-	return image;
+	return &image;
 }
 
 UserParamsSetShutterImpl::UserParamsSetShutterImpl(const std::string& val)

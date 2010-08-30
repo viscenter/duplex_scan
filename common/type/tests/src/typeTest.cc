@@ -13,7 +13,7 @@ int main(int argc, char ** argv)
 	string filename("testFile"); 
 
 	UserParamsGetImageImpl gip(filename, &im);
-	if( filename != gip.getFilename() && im != gip.getImage() )
+	if( filename != gip.getFilename() && im != *gip.getImage() )
 	{
 		cerr	<<"\nUserParamsGetImageImpl accessor failure " 
 				<<__FILE__<<":"<<__LINE__;
