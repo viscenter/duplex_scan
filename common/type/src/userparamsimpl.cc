@@ -30,9 +30,9 @@ IplImage* UserParamsGetImageImpl::getImage() const
 	return image;
 }
 
-UserParamsSetShutterImpl::UserParamsSetShutterImpl(double value)
+UserParamsSetShutterImpl::UserParamsSetShutterImpl(const std::string& val)
 	:
-		value(value)
+		value(val)
 {
 }
 
@@ -40,7 +40,7 @@ UserParamsSetShutterImpl::~UserParamsSetShutterImpl()
 {
 }
 
-double UserParamsSetShutterImpl::getValue() const
+std::string UserParamsSetShutterImpl::getValue() const
 {
 	return value;
 }

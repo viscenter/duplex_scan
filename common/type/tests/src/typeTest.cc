@@ -22,7 +22,7 @@ int main(int argc, char ** argv)
 	}
 	cvReleaseImage(&im);
 
-	double val = 2.0;
+	string val("50");
 	UserParamsSetShutterImpl sip(val);
 	if(  val != sip.getValue() )
 	{

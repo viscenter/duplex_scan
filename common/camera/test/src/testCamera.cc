@@ -1,5 +1,6 @@
 
 #include <common/camera/src/camerapasimpl.h>
+#include <common/type/src/userparamsimpl.h>
 //#include <common/camera/src/camerafirewireimpl.h>
 #include <string>
 #include <iostream>
@@ -31,6 +32,23 @@ int main(int argc, char ** argv)
 		else
 			cout <<"\nInitialized a camera type "<< ctn 
 				  << "with name \""<<(*it)->getName()<<"\"";
+
+		UserParamsSetShutterImpl upss("1/10"); 
+		if(!(*it)->setShutterSpeed(upss))
+		{
+			cerr<<"\nFailed to setShutter speed choice ("
+				 <<upss.getValue()<<") " <<ctn<<" camera";
+			failure = true;
+		}
+
+		IplImage *im = cvCreateImage(cvSize(10, 10), 8, 3);
+		string fname("test.jpg");
+		UserParamsGetImageImpl upgi(fname, &im ); 
+		if(!(*it)->getImage(upgi))
+		{
+			cerr<<"\nFailed to getImage "<<ctn<<" camera";
+			failure = true;
+		}
 
 		if(!(*it)->finalize())
 		{

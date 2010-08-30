@@ -25,11 +25,11 @@ namespace viz
 	class UserParamsSetShutterImpl : public UserParams
 	{
 		public:
-			UserParamsSetShutterImpl(double value);
+			UserParamsSetShutterImpl(const std::string& value);
 			virtual ~UserParamsSetShutterImpl();
-			double getValue() const;
+			std::string getValue() const;
 		
 		private:
-			double value;
+			std::string value;
 	};
 }
