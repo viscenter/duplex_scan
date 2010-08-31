@@ -65,11 +65,11 @@ IF (NOT 1)
 	SET(OpenCV_LIBS 
 		dl;m;pthread;rt 
 		
-		 
-		 
-		 
-		 
-		 
+		/usr/lib/libjpeg.so 
+		/usr/lib/libpng.so;/usr/lib/libz.so 
+		/usr/lib/libtiff.so 
+		/usr/lib/libjasper.so;/usr/lib/libjpeg.so 
+		gtk-x11-2.0;gdk-x11-2.0;atk-1.0;gio-2.0;pangoft2-1.0;gdk_pixbuf-2.0;m;pangocairo-1.0;cairo;pango-1.0;freetype;fontconfig;gobject-2.0;gmodule-2.0;gthread-2.0;rt;glib-2.0;gthread-2.0;rt;glib-2.0 
 		${OpenCV_LIBS}) # The standard libs BEFORE (OpenCV_LIBS) since these can have "debug","optimized".
 ENDIF(NOT 1)
 
