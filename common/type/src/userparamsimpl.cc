@@ -10,7 +10,7 @@ namespace viz
 
 UserParamsGetImageImpl::UserParamsGetImageImpl(std::string& filename, IplImage **image, bool getImageData)
 	:
-		filename(filename), image(*image), getImageData(getImageData)
+		filename(filename), image(image), getImageData(getImageData)
 {
 
 }
@@ -27,7 +27,7 @@ string UserParamsGetImageImpl::getFilename() const
 
 IplImage** UserParamsGetImageImpl::getImage() 
 {
-	return &image;
+	return image;
 }
 
 UserParamsSetShutterImpl::UserParamsSetShutterImpl(const std::string& val)

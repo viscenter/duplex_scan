@@ -1,3 +1,12 @@
+/**
+ *	@file common/type/src/userparamsimpl.h
+ * Concrete classes for User defined parameters
+ * 
+ * These concrete classes define types used by implementing camera interface classes
+	@see UserParams
+ *
+ */
+
 #pragma once
 
 #include <string>
@@ -6,21 +15,29 @@
 
 #include <common/type/src/userparams.h>
 
+/**
+ * viz namespace
+ */
 namespace viz
 {
+	
+	/**
+	 * Implement
+	 */
 	class UserParamsGetImageImpl : public UserParams
 	{
 		public:
 			UserParamsGetImageImpl(std::string& filename, IplImage **image, bool imageData=false);
 			virtual ~UserParamsGetImageImpl();
 			std::string getFilename() const;
+			void setFilename(const std::string& fn) { filename = fn;}
 			IplImage** getImage();
 			bool loadImageData() const { return getImageData; }
 
 		
 		private:
 			std::string filename;
-			IplImage *image;
+			IplImage **image;
 			bool getImageData;
 	};
 

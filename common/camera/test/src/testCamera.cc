@@ -59,12 +59,25 @@ int main(int argc, char ** argv)
 		}
 		else
 		{
-			im = *upgi.getImage();
+			//im = *upgi.getImage();
 			cvNamedWindow("display", CV_WINDOW_AUTOSIZE);
 			cvShowImage("display", im);
 			cvWaitKey();
 			cvDestroyWindow("display");
 			cvReleaseImage(&im);
+		}
+
+		fname = "test2.raw";
+		UserParamsGetImageImpl upgi2(fname, 0, true);
+		if(!(*it)->getImage(upgi2))
+		{
+			cerr<<"\nFailed to getImage "<<ctn<<" camera";
+			failure = true;
+		}
+		else
+		{
+			cout <<"\nImage saved to "<<upgi2.getFilename();
+
 		}
 
 		if(!(*it)->finalize())
