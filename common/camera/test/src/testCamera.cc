@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 using namespace std;
 using namespace viz;
@@ -17,7 +18,14 @@ int main(int argc, char ** argv)
 	vector<ICamera*> cameras;
 	//cameras.push_back( CameraFirewireImpl::getInstance());
 	cameras.push_back( CameraPASImpl::getInstance());
-
+/*
+	IplImage *im2 = cvLoadImage("test.jpg", -1); 
+	cvNamedWindow("display", CV_WINDOW_AUTOSIZE);
+	cvShowImage("display", im2);
+	cvWaitKey();
+	cvDestroyWindow("display");
+	cvReleaseImage(&im2);
+*/
 	for(vector<ICamera*>::iterator it = cameras.begin(); it != cameras.end();
 			++it)
 	{
@@ -41,13 +49,22 @@ int main(int argc, char ** argv)
 			failure = true;
 		}
 
-		IplImage *im = cvCreateImage(cvSize(10, 10), 8, 3);
+		IplImage *im = 0;
 		string fname("test.jpg");
-		UserParamsGetImageImpl upgi(fname, &im ); 
+		UserParamsGetImageImpl upgi(fname, &im, true ); 
 		if(!(*it)->getImage(upgi))
 		{
 			cerr<<"\nFailed to getImage "<<ctn<<" camera";
 			failure = true;
+		}
+		else
+		{
+			im = *upgi.getImage();
+			cvNamedWindow("display", CV_WINDOW_AUTOSIZE);
+			cvShowImage("display", im);
+			cvWaitKey();
+			cvDestroyWindow("display");
+			cvReleaseImage(&im);
 		}
 
 		if(!(*it)->finalize())

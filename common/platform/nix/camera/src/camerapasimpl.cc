@@ -5,6 +5,10 @@
 #include <typeinfo>
 #include <fcntl.h>
 
+
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+
 #include <common/camera/src/camerapasimpl.h>
 #include <common/type/src/userparamsimpl.h>
 
@@ -89,50 +93,59 @@ bool CameraPASImpl::getImage(UserParams &p)
 		cout <<"\nGetting image from camera:";
 		if(!param.getFilename().empty())
 			cout <<"\n\tas a saved file \"" <<param.getFilename() <<"\"";
-		if( *param.getImage() !=0 )
-			cout <<"\n\t as an IplImage";
+		if( param.loadImageData() )
+			cout <<"\n\t as an IplImage as well";
 #endif
-		if(param.getFilename().empty() && *param.getImage()  ) 
+		if(param.getFilename().empty() && !param.loadImageData()  ) 
 		{
-			cerr <<"\nGetImage(), invalid parameter. Specify name or image ";
+			cerr <<"\nGetImage(), invalid parameter. Specify name or getImageData ==true ";
 			return false;
 		}
 
 		string cFormat;
 		if(!getCameraConfigValue("imageformat", cFormat))
 		{
-			cerr <<"\nGetImage(), failed to get image format ";
+			cerr <<"\nGetImage(), failed to get camera save image format ";
 			return false;
 		}
 #if DEBUG
 		cout <<"\nCurrent image format :" <<cFormat;
 #endif
-		bool cameraRAWFormat = false;
-		if(cFormat.find_last_of("RAW") == string::npos ||
-			cFormat.find_last_of("RAW") == string::npos)
-			cameraRAWFormat = true;
 
-		bool saveRawFormat = false;
-		if(param.getFilename().find_last_of(".CR2") == string::npos ||
-			param.getFilename().find_last_of(".cr2") == string::npos ||
-			param.getFilename().find_last_of(".RAW") == string::npos ||
-			param.getFilename().find_last_of(".raw") == string::npos)
+		bool cameraRawFormat = false;
+		if(cFormat.find("RAW") != string::npos ||
+			cFormat.find("raw") != string::npos)
 		{
-			saveRawFormat = true;
-			cout <<"\nSaverawformat";
+			cameraRawFormat = true;
+			cout <<"\nRAW Camera format";
 		}
 		else
-			cout <<"\n!Saverawformat";
+			cout <<"\n!RAW Camera format";
 
+		bool saveRawFormat = false;
+		if(param.getFilename().rfind(".CR2") != string::npos ||
+			param.getFilename().rfind(".cr2") != string::npos ||
+			param.getFilename().rfind(".RAW") != string::npos ||
+			param.getFilename().rfind(".raw") != string::npos)
+		{
+			saveRawFormat = true;
+			cout <<"\nRAW Save format";
+		}
+		else
+			cout <<"\n!RAW Save format";
 
+		cout << endl << cameraRawFormat << " == "<< saveRawFormat;
+
+		if(cameraRawFormat != saveRawFormat)
+		{
+			cerr<<"\nFormat mismatch. Save name and current camera save mode not the same.";
+			cerr<<"\nEither change filename extension (raw/cr2 or jpg/tiff/ppm) or save mode on the camera to match";
+			return false;
+		}
 		
 		string cameraSaveFile("foo.jpg");
-		if(saveRawFormat && *param.getImage() != 0)
-		{
-			cvReleaseImage(param.getImage());
-			*param.getImage() = 0;
+		if(saveRawFormat)
 			cameraSaveFile = "foo.raw";
-		}
 
 		if(saveRawFormat && param.getFilename().empty())
 		{
@@ -156,12 +169,22 @@ bool CameraPASImpl::getImage(UserParams &p)
 		retval = gp_camera_file_get(gCamera, camera_file_path.folder, camera_file_path.name,
 				  GP_FILE_TYPE_NORMAL, canonfile, gContext);
 			
-		cerr<<"\nDeleting.\n";
+		cerr<<"\nDeleting... off the camera\n";
 		retval = gp_camera_file_delete(gCamera, camera_file_path.folder, camera_file_path.name,
 				gContext);
 			
 		gp_file_free(canonfile);
-		
+		close(fd);
+		if(param.loadImageData() && !cameraRawFormat)
+		{
+			cerr <<"\nloading image file \""<<param.getFilename()<<"\"";
+			*(param.getImage()) = cvLoadImage(param.getFilename().c_str(), CV_LOAD_IMAGE_UNCHANGED);
+			if(*param.getImage() == 0)
+			{
+				cerr <<"\nFailed to load image data";
+				return false;
+			}
+		}
 	}
 	catch(bad_cast& b)
 	{
@@ -172,6 +195,7 @@ bool CameraPASImpl::getImage(UserParams &p)
 
 	return true;
 }
+
 bool CameraPASImpl::getCameraConfigValue(const string& key, string &value)
 {
 	value = "";

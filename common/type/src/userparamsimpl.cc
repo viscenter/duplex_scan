@@ -8,9 +8,9 @@ using namespace std;
 namespace viz
 {
 
-UserParamsGetImageImpl::UserParamsGetImageImpl(std::string& filename, IplImage **image)
+UserParamsGetImageImpl::UserParamsGetImageImpl(std::string& filename, IplImage **image, bool getImageData)
 	:
-		filename(filename), image(*image)
+		filename(filename), image(*image), getImageData(getImageData)
 {
 
 }
