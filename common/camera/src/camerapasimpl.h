@@ -12,8 +12,8 @@ namespace viz
 	{
 		friend class Singleton<CameraPASImpl>;
 		public:
-				virtual bool initialize();
-				virtual bool finalize();
+			virtual bool initialize();
+			virtual bool finalize();
 			virtual bool getImage(UserParams &p);
 			virtual bool setShutterSpeed(UserParams &p);
 			virtual std::string getName() const;

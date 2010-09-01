@@ -16,7 +16,9 @@
 namespace viz
 {
 	/**
-	 * Base class that users must inherit from to allow for specialized implemenations for specify parameters. 
+	 * Base class  for UserParams
+	 *
+	 * Allows for specialized implemenations to specify parameters. 
 	 */
 	class UserParams
 	{
