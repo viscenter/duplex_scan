@@ -1,3 +1,6 @@
+/**
+ *	@file common/camera/src/camerafirewireimpl.h
+ */
 #pragma once
 
 #include <string>
@@ -10,12 +13,22 @@
 namespace viz
 {
 
+	/** 
+	 * @brief firewire camera implementation. 
+	 *
+	 * This is the firewire implementation of the camera interface
+	 * @warning <b><i>currently not supported under linux(ubuntu 10.04(lucid) because of dc1394/libghoto2-2 library conflict</i></b> 
+	 */
 	class CameraFirewireImpl : public virtual ICamera , public virtual Singleton<CameraFirewireImpl>
 	{
+
+		/**
+		 * @brief so that singleton has access to constructors/destructors 
+		 */
 		friend class Singleton<CameraFirewireImpl>;
 		public:
-				virtual bool initialize();
-				virtual bool finalize();
+			virtual bool initialize();
+			virtual bool finalize();
 			virtual bool getImage(UserParams &p);
 			virtual bool setShutterSpeed(UserParams &p);
 			virtual std::string getName() const;

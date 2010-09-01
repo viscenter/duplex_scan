@@ -22,19 +22,25 @@ namespace viz
 {
 	
 	/**
-	 * Implements @see UserParams
+	 * @brief Implements getImage parameters 
 	 *
 	 * Defines parameters to get a camera image
+	 * @see UserParams
+	 * @see ICamera
 	 */
 	class UserParamsGetImageImpl : public UserParams
 	{
 
 		public:
 			/**
-			 * constructor
+			 * @brief constructor
 			 *
-			 *	If <code>!filename.empty()</code> capture image data will be saved to a file specified by user, or a generic name will be used 
-			 *	If <code>image != 0</code> imageData will be saves to user supplied handle. image will only be valid if it is a non RAW image. Uses opencv to load data so only valid data types are jpg,png,pbm,pgm,ppm,tiff,bmp,dib,sr,ras
+			   <p>
+			 *	<code>if(!filename.empty())</code> capture image data will be saved to a file specified by user, or a generic name will be used 
+			   </p>
+			   <p>
+			 *	<code>if(image != 0)</code> imageData will be saves to user supplied handle. Image will only be valid if it is a non RAW image (support later). Uses<b> OpenCV's</b> to load data so only valid data types are <i>jpg,png,pbm,pgm,ppm,tiff,bmp,dib,sr,ras</i>
+			   </p>
 			 * @param[in] filename name to save the captured image to
 			 * @param[in] image image data to save captured to
 			 * @param[in] setImageData whether to set image data
@@ -42,40 +48,40 @@ namespace viz
 			UserParamsGetImageImpl(std::string& filename, IplImage **image, bool setImageData=false);
 
 			/**
-			 * default virtual destrutor
+			 * @brief default virtual destrutor
 			 */
 			virtual ~UserParamsGetImageImpl();
 
 			/**
-			 * filename getter
+			 * @brief filename getter
 			 * 
 			 * @return filename used to save captured image to
 			 */
 			std::string getFilename() const;
 
 			/**
-			 * filename setter
+			 * @brief filename setter
 			 * 
 			 * @param[in] fn sets the filename of the captured image
 			 */
 			void setFilename(const std::string& fn) { filename = fn;}
 
 			/**
-			 * imageData getter
+			 * @brief imageData getter
 			 * 
 			 * @return returns the imageData of the captured image
 			 */
 			IplImage** getImage();
 
 			/**
-			 * getImageData setter
+			 * @brief getImageData setter
 			 * 
 			 * @param[in] val sets whether the image should be caputured
 			 */
 			void setImageData(bool val) { getImageData = val;}
 
 			/**
-			 * getImageData getter
+			 * @brief getImageData getter
 			 * 
 			 * @return whether imageData is going to be set
 			 */
@@ -89,33 +95,35 @@ namespace viz
 	};
 
 	/**
-	 * Implements @see UserParams
+	 * @brief Implements setShutterSpeed parameters
 	 *
 	 * Defines parameters to set camera shutter speed 
+	 * @see UserParams
+	 * @see ICamera
 	 */
 	class UserParamsSetShutterImpl : public UserParams
 	{
 		public:
 			/**
-			 * constructor
+			 * @brief constructor
 			 * 
 			 * @param[in] value string representation of the shutter speed
 			 */
 			UserParamsSetShutterImpl(const std::string& value);
 			/**
-			 * virtual destructor
+			 * @brief virtual destructor
 			 */
 			virtual ~UserParamsSetShutterImpl();
 
 			/**
-			 * shutter value getter
+			 * @brief shutter value getter
 			 * 
 			 * @return value shutter is set to
 			 */
 			std::string getValue() const;
 
 			/**
-			 * shutter value setter
+			 * @brief shutter value setter
 			 * 
 			 * @param[in] val sets the shutter value
 			 */

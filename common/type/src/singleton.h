@@ -1,9 +1,5 @@
 /**
  *	@file common/type/src/singleton.h
- * template class the defines a singleton pattern to allow only once instance in a program 
- * Used for  
-	@see CameraFirewireImpl
-	@see CameraPASImpl
  *
  */
 
@@ -18,15 +14,20 @@
 namespace viz
 {
 	/**
-	 * simple templated singleton pattern
+	 * @brief templated singleton pattern
+	 *
+	 * allowing a single instace of the defined  type  
+	 *	@see CameraPASImpl
+	 *	@see CameraFirewireImpl
 	 */
 	template<typename T>
 	class Singleton
 	{
 		public:
 			/**
-			 * the only accessor
+			 * @brief the only accessor
 			 * 
+			 * the static pointer is wrapped in a std::auto_pointer  
 			 * @returns a pointer to the datatype's only instance in a running program
 			 */
 			static T* getInstance()

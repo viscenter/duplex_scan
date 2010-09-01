@@ -1,15 +1,5 @@
 /**
  *	@file common/camera/src/icamera.h
- * Camera Interface
- * 
- * This describes the main camera interface which is (intially) limited to 
- * <ul>
- 	<ol>initializing the camera</ol>
- 	<ol>setting the shutter speed</ol>
- 	<ol>grabbing an image</ol>
-	</ul>
-	@see CameraPASImpl for the point and shoot implementation and @see CaemrafirewireImpl firewire implementation
- *
  */
 
 #pragma once
@@ -22,34 +12,55 @@
  */
 namespace viz
 {
-	/**
-	 * Abstract class describe the camera interface
+	/** 
+	 * @brief abstract camera interface. 
+	 *
+	 * This describes the main camera interface which is (intially) limited to 
+	 * <ul>
+			<li>initializing the camera</li>
+			<li>setting the shutter speed</li>
+			<li>grabbing an image</li>
+		</ul>
+		@see CameraPASImpl for the point and shoot implementation 
+		@see CameraFirewireImpl firewire implementation (currently not supported)
 	 */
 	class ICamera
 	{
 		/**
-		 * types of cameras supported
+		 * @brief types of cameras supported
 		 */
 		public:
-			enum CameraType {POINT_AND_SHOOT, FIREWIRE_A, FIREWIRE_B, UNKNOWN};
+			enum CameraType {
+								  ///dslr, point and shoot
+								  POINT_AND_SHOOT, 
+								  ///IIDC firewire A cameras
+								  FIREWIRE_A, 
+								  ///IIDC firewire B cameras
+								  FIREWIRE_B, 
+								  ///unknown camera
+								  UNKNOWN}; 
 			
 			/**
-			 * pure virtual method to intialize a camera
+			 * @brief camera initialization
 			 *
+			 * pure virtual method to intialize a camera
 			 * All initialization connection code should go in here
 			 * @return true if a camera connection is established.
 			 */
 			virtual bool initialize() =0;
 
 			/**
-			 * pure virtual method to disconnect from a camera
+			 * @brief camera de-initialization
 			 *
+			 * pure virtual method to disconnect from a camera
 			 * All disconnect code should go in here 
 			 * @return true if a camera has been disconnected.
 			 */
 			virtual bool finalize() =0;
 
 			/**
+			 * @brief get an image from the camera
+			 *
 			 * pure virtual method to get an image from the camera
 			 *
 			 * @param p user definiable paramaters to get an image
@@ -59,6 +70,8 @@ namespace viz
 			virtual bool getImage(UserParams &p) =0;
 
 			/**
+			 * @brief set the shutter speed of a camera
+			 *
 			 * pure virtual method to set the shutterspeed of a camera
 			 *
 			 * @param p user definiable paramaters to set the shutter 
@@ -68,6 +81,8 @@ namespace viz
 			virtual bool setShutterSpeed(UserParams &p) =0;
 
 			/**
+			 * @brief get the name of the camera
+			 *
 			 * pure virtual method to get the name of the camera
 			 *
 			 * @return the camera's name
@@ -75,6 +90,8 @@ namespace viz
 			virtual std::string getName() const =0;
 
 			/**
+			 * @brief get the camera type
+			 *
 			 * pure virtual method to get type of camera 
 			 *
 			 * @return the type of camera
@@ -82,12 +99,14 @@ namespace viz
 			virtual CameraType getType() const =0;
 
 			/**
-			 * virtual destructor
+			 * @brief virtual destructor
 			 */
 			virtual ~ICamera(){}
 
 			/**
-			 * help function to translate the @see CameraType to a string
+			 * @brief get camera type as a string
+			 *
+			 * helper function to translate the CameraType to a string
 			 * 
 			 * @return camera type as a string
 			 */
