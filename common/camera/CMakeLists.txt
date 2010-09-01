@@ -18,3 +18,6 @@ target_link_libraries( cameraTest userparams vizcamera cv highgui)
 
 add_executable(testgphoto test/src/testgphoto.cc) 
 target_link_libraries( testgphoto userparams vizcamera cv highgui )
+
+add_executable(grabImage src/grabImage.cc) 
+target_link_libraries( grabImage userparams vizcamera cv highgui)

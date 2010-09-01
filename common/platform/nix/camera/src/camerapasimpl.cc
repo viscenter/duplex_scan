@@ -218,6 +218,7 @@ bool CameraPASImpl::getImage(UserParams &p)
 			}
 		}
 		else
+		if(!param.loadImageData() && cameraRawFormat)
 		{
 			cerr
 				<<"\nNot loading image data as raw format not currently supported"
