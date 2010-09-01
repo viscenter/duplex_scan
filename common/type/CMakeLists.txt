@@ -7,4 +7,4 @@ add_library(userparams src/userparamsimpl.cc)
 add_executable(typeTest tests/src/typeTest.cc) 
 target_link_libraries( typeTest userparams cv highgui)
 
-add_executable(singletonTest tests/src/singletonTest.cc) 
+add_executable(singletonTest test/src/singletonTest.cc) 
