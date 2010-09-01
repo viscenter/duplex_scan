@@ -1,19 +1,18 @@
 /**
  *	@file common/type/src/userparams.h
  *
- *  Interface class that defines user parameters
  * 
  * Loosely defined class that allows the user to specify user parameters for specific implementations 
  * @see UserParamsGetImageImpl
  * @see UserParamsSetShutterImpl
  *
+ * @author Danny S. Crasto
+ * @date 08/2010
+ * @version 1.0
  */
 
 #pragma once
 
-/**
- * @brief viz namespace
- */
 namespace viz
 {
 	/**

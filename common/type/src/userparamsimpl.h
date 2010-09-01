@@ -1,10 +1,8 @@
 /**
  *	@file common/type/src/userparamsimpl.h
- * Concrete classes for User defined parameters
- * 
- * These concrete classes define types used by implementing camera interface classes
-	@see UserParams
- *
+ * @author Danny S. Crasto
+ * @date 08/2010
+ * @version 1.0
  */
 
 #pragma once
@@ -15,9 +13,6 @@
 
 #include <common/type/src/userparams.h>
 
-/**
- * viz namespace
- */
 namespace viz
 {
 	

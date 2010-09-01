@@ -1,6 +1,8 @@
 /**
  *	@file common/type/src/singleton.h
- *
+ * @author Danny S. Crasto
+ * @date 08/2010
+ * @version 1.0
  */
 
 #pragma once
@@ -8,9 +10,6 @@
 #include <memory>
 #include <iostream>
 
-/**
-* viz namespace
-*/
 namespace viz
 {
 	/**

@@ -1,6 +1,56 @@
 /**
  *	@file common/camera/src/icamera.h
+ * @author Danny S. Crasto
+ * @date 08/2010
+ * @version 1.0
  */
+
+/**
+ * @mainpage
+ * @section intro_sec Introduction
+ * <p>
+ 	<p>This documentation describes the code that is use to preform non invasive, duplex scanning of documents and is part of the <i> EDUCE : Enhanced Digital Unwrapping for Conservation and Exploration</i> project</p>
+   <p>
+	The goals of this code are
+	<ul>
+		<li>Let it be easily extensible - uses interfaces allowing the user to define specialization for types, cameras, etcs </li>
+		<li>Platform independent - the source tree is split by platform where the porting layer is clearly seperate from cross platform code The build system that is in place takes care of the   </li>
+	</ul>
+  </p>
+   <p> Supported platforms: 
+ 		<ul>
+			<li>UNIX</li> 
+			<li>OSX - TBA</li> 
+			<li>WIN - TBA</li> 
+		</ul>
+	 </p>
+  </p>
+
+  @section build_sec Building from Source
+   <p>
+	  You will need <a href="www.cmake.org">CMAKE</a> which is a cross platform build utility and the appropriate platform independant/dependant libraries
+	 <p>
+ 		<br /> Platform indepentant library
+ 		<ul>
+			<li>libboost-dev v1.40</li> 
+		</ul>
+ 		<br /> Platform dependant library (dev platform (ubuntu x86 10.04 [lucid]) 
+ 		<ul>
+			<li>g++-4.4</li> 
+			<li>libghoto2-2-dev v2.4.8</li> 
+			<li>opencv2.1 -(included with source in external/platform/nix/opencv2.1)</li> 
+		</ul>
+		<br />Run:
+		<br />
+		<code>
+			<br />mkdir bin; cd bin; cmake (location of source)
+			<br /><i> cmake options: -DDEBUG (debug build)</i>
+		</code>
+		<br /><br />And your done.
+	  </p>
+	</p>
+ */
+
 
 #pragma once
 
@@ -8,7 +58,7 @@
 #include <common/type/src/userparams.h>
 
 /**
- * viz namespace
+ * @brief viz center namespace 
  */
 namespace viz
 {
@@ -65,7 +115,6 @@ namespace viz
 			 *
 			 * @param p user definiable paramaters to get an image
 			 * @return true if on a successful image grab
-			 * @see UserParamsGetImageImpl
 			 */
 			virtual bool getImage(UserParams &p) =0;
 
@@ -76,7 +125,6 @@ namespace viz
 			 *
 			 * @param p user definiable paramaters to set the shutter 
 			 * @return true if the shutter speed is successful set
-			 * @see UserParamsSetShutterImpl
 			 */
 			virtual bool setShutterSpeed(UserParams &p) =0;
 
