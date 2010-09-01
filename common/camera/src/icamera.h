@@ -13,8 +13,8 @@
    <p>
 	The goals of this code are
 	<ul>
-		<li>Let it be easily extensible - uses interfaces allowing the user to define specialization for types, cameras, etcs </li>
-		<li>Platform independent - the source tree is split by platform where the porting layer is clearly seperate from cross platform code The build system that is in place takes care of the   </li>
+		<li>Let it be easily extensible - uses interfaces allowing the user to define specialization for types, cameras, etc </li>
+		<li>Platform independent - the source tree is split by platform where the porting layer is clearly separate from cross platform code The build system that is in place takes care of the   </li>
 	</ul>
   </p>
    <p> Supported platforms: 
@@ -28,13 +28,13 @@
 
   @section build_sec Building from Source
    <p>
-	  You will need <a href="www.cmake.org">CMAKE</a> which is a cross platform build utility and the appropriate platform independant/dependant libraries
+	  You will need <a href="www.cmake.org">CMAKE</a> which is a cross platform build utility and the appropriate platform independent/dependent libraries
 	 <p>
- 		<br /> Platform indepentant library
+ 		<br /> Platform independent library
  		<ul>
 			<li>libboost-dev v1.40</li> 
 		</ul>
- 		<br /> Platform dependant library (dev platform (ubuntu x86 10.04 [lucid]) 
+ 		<br /> Platform dependent library (dev platform (ubuntu x86 10.04 [lucid]) 
  		<ul>
 			<li>g++-4.4</li> 
 			<li>libghoto2-2-dev v2.4.8</li> 
