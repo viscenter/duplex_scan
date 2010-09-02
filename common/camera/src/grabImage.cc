@@ -1,25 +1,56 @@
 
-#include <common/camera/src/camerapasimpl.h>
-#include <common/type/src/userparamsimpl.h>
 #include <string>
 #include <iostream>
 #include <vector>
+#include <iomanip>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#include <boost/program_options.hpp>
+#include <common/camera/src/camerapasimpl.h>
+#include <common/type/src/userparamsimpl.h>
 using namespace std;
 using namespace viz;
+namespace po = boost::program_options;
 
 int main(int argc, char ** argv)
 {
+	std::string baseName,extension;
+	vector<string> shutterSpeeds;
+	po::options_description desc("Allowed options");
+	 desc.add_options()
+    ("help,h", "help message")
+    ("outputname,o", po::value<string>(&baseName)->default_value("grab"), 
+	 "output file base name")
+    ("outputextension,e", po::value<string>(&extension)->default_value("jpg"), 
+	 "output file extension")
+    ("shutterspeeds,s", po::value< vector<string> >(&shutterSpeeds), "shutter speeds");
 
-	if(argc < 2 )
-	{
-		cerr<<"\nUsage: "<<argv[0]<<" <outputImage> [<shutterSpeed>]\n";
-		return -1;
+	po::positional_options_description p;
+	p.add("shutterspeeds", -1);
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+	po::notify(vm);    
+
+	if (vm.count("help")) {
+		 cout << desc << "\n";
+		 return 0;
+	}
+	if (vm.count("shutterspeeds")) {
+		cout <<"\nSave file format \""<<baseName<<"_"<<"%d."<<extension<<"\"";
+		cout << "\nShutter speeds are: " ;
+		for(int i=0;i<(int)shutterSpeeds.size(); ++i)
+			cout << shutterSpeeds[i] << " ";
+		cout <<endl;
+
+	} else {
+		cout <<"\nSave file \""<<baseName<<"."<<extension<<"\"";
+		 cout << "\nNot varying shutter speeds";
 	}
 
-
+	
+	IplImage *im = 0;
+	string fname;
 	CameraPASImpl * camera =  CameraPASImpl::getInstance();
 	if(!camera->initialize())
 	{
@@ -28,33 +59,52 @@ int main(int argc, char ** argv)
 	cout <<"\nInitialized a camera type "<<camera->getType()
 				  << " named \""<<camera->getName()<<"\"";
 	
-	if(argc > 2)
+	if(!shutterSpeeds.empty())
 	{
-		UserParamsSetShutterImpl upss(argv[2]); 
-		if(!camera->setShutterSpeed(upss))
+		for(int i =0;i<(int)shutterSpeeds.size();++i)
 		{
-			cerr<<"\nFailed to setShutter speed ("
-				 <<upss.getValue()<<")";
-			camera->finalize();
-			return -1;
+			stringstream ss;
+			ss << baseName <<"_"<< setfill('0') << setw(4)<<i<<"."<<extension;
+			fname = ss.str();
+			cout <<"\nSaving "<<fname;
+			cout <<".";
+			UserParamsSetShutterImpl upss(shutterSpeeds[i]); 
+			if(!camera->setShutterSpeed(upss))
+			{
+				cerr<<"\nFailed to setShutter speed ("
+					 <<upss.getValue()<<")";
+				camera->finalize();
+				return -1;
+			}
+			cout <<".";
+			UserParamsGetImageImpl upgi(fname, &im, false ); 
+			if(!camera->getImage(upgi))
+			{
+				cerr<<". FAILED!";
+			}
+			else
+			{
+				cerr<<". done";
+			}
 		}
 	}
 	else
 	{
-		cout <<"\nNo shutterspeed specified";
+		fname = baseName + "." + "extension";
+		cout <<"\nSaving "<<fname ;
+		cout <<".";
+		UserParamsGetImageImpl upgi(fname, &im, false ); 
+		cout <<".";
+		if(!camera->getImage(upgi))
+		{
+			cerr<<". FAILED!";
+		}
+		else
+		{
+			cerr<<". done";
+		}
 	}
 
-	IplImage *im = 0;
-	string fname(argv[1]);
-	UserParamsGetImageImpl upgi(fname, &im, false ); 
-	if(!camera->getImage(upgi))
-	{
-		cerr<<"\nFailed to getImage \""<<argv[1]<<" camera";
-	}
-	else
-	{
-		cout<<"\nImage \""<<argv[1]<<" saved";
-	}
 
 	if(!camera->finalize())
 	{

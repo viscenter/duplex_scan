@@ -32,7 +32,7 @@
 	 <p>
  		<br /> Platform independent library
  		<ul>
-			<li>libboost-dev v1.40</li> 
+			<li>libboost-dev v1.40 (incude filesystem program-options)</li> 
 		</ul>
  		<br /> Platform dependent library (dev platform (ubuntu x86 10.04 [lucid]) 
  		<ul>

@@ -46,7 +46,7 @@ if [ "$?" != "0" ]; then
    echo "package update failed" 1>&2
 	exit 1
 fi
-apt-get install -qq -y subversion libboost-dev libboost-filesystem-dev g++ vim libghoto2-2-dev gphoto2 ctags ncurses-term libjpeg62-dev libtiff4-dev libjasper-dev libpng-dev libtbb2 libtbb-dev libgtk2.0-dev pkg-config
+apt-get install -qq -y subversion libboost-dev libboost-filesystem-dev libboost-progam-options-dev  g++ vim libghoto2-2-dev gphoto2 ctags ncurses-term libjpeg62-dev libtiff4-dev libjasper-dev libpng-dev libtbb2 libtbb-dev libgtk2.0-dev pkg-config
 if [ "$?" != "0" ]; then
    echo "package install failed" 1>&2
 	exit 1
