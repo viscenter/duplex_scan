@@ -90,7 +90,7 @@ int main(int argc, char ** argv)
 	}
 	else
 	{
-		fname = baseName + "." + "extension";
+		fname = baseName + "." + extension;
 		cout <<"\nSaving "<<fname ;
 		cout <<".";
 		UserParamsGetImageImpl upgi(fname, &im, false ); 

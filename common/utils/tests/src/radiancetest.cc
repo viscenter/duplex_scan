@@ -76,11 +76,24 @@ int main ( int argc, char **argv )
 	else
 	{
 		IplImage *diffIm= cvCloneImage(im2);
+		cvSub(im, im2, diffIm);
+		if(!writePFM(diffIm, (image1+"diff"+image2+".pfm").c_str()))
+		{
+			cerr<<"\nfailed to write out file";
+		}
+
 		cvSub(im2, im, diffIm);
 		if(!writePFM(diffIm, (image2+"diff"+image1+".pfm").c_str()))
 		{
 			cerr<<"\nfailed to write out file";
 		}
+
+		cvAbsDiff(im, im2, diffIm);
+		if(!writePFM(diffIm, (image1+"ABSdiff"+image2+".pfm").c_str()))
+		{
+			cerr<<"\nfailed to write out file";
+		}
+
 		cvReleaseImage(&diffIm);
 	}
 
