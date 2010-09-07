@@ -16,3 +16,6 @@ target_link_libraries( helloWorld cv highgui)
 
 add_executable(radiancetest tests/src/radiancetest.cc)
 target_link_libraries( radiancetest cv highgui ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY})
+
+add_executable(duplexScanStats src/duplexScanStats.cc)
+target_link_libraries( duplexScanStats cv highgui ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY})
