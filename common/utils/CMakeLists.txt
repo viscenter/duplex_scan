@@ -8,8 +8,6 @@ FIND_PACKAGE(Boost COMPONENTS filesystem REQUIRED)
 INCLUDE_DIRECTORIES( ${extOpenCV2_1_INCLUDE_PATH} )
 LINK_DIRECTORIES( ${extOpenCV2_1_LIB_PATH} )
 
-add_library(imageutils src/imageutils.cc)
-target_link_libraries( imageutils cv highgui ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY})
 
 add_executable(hdrRead tests/src/hdrRead.cc)
 target_link_libraries( hdrRead cv highgui)
