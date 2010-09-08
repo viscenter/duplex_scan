@@ -1,7 +1,11 @@
+#include <cstdlib>
+
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <opencv/cv.h>
+#include <opencv/highgui.h>
 #include "boost/filesystem.hpp" 
 
 namespace viz
@@ -45,7 +49,7 @@ namespace viz
 		im = cvCreateImage(cvSize(width, height), IPL_DEPTH_32F, channels);
 		int toRead = width * height * channels * sizeof(float);
 #if DEBUG
-		std::cout <<"\nWidthStep: "<< im->widthStep << " row Length: "<<width*channels*sizeof(float)<< " toRead: " << toRead << " sf: "<< sf<< endl;
+		std::cout <<"\nWidthStep: "<< im->widthStep << " row Length: "<<width*channels*sizeof(float)<< " toRead: " << toRead << " sf: "<< sf<< std::endl;
 #endif
 		fin.read(im->imageData, toRead);
 		if( fin.gcount() != toRead)
@@ -101,5 +105,59 @@ namespace viz
 		}
 		fout.close();
 		return true;
+	}
+
+
+	IplImage* getIplImageFromRAW(const std::string& filename, bool inColor, int bpp)
+	{
+		IplImage *im = 0;
+		std::stringstream cmd;
+		std::string  tmpname;
+		double dom = 1.0/((1<<bpp) -1);
+
+
+		cmd << DCRAW_EXE;
+		if(inColor)
+		{
+			cmd << " -4 -c ";
+			tmpname = "tmp.ppm";
+		}
+		else
+		{
+		 	cmd << " -d  -4  -c ";
+			tmpname = "tmp.pgm";
+		}
+
+		cmd << filename;
+
+		cmd <<" >> " << tmpname;
+#if DEBUG
+		std::cout <<"\nExecuting \""<<cmd.str()<<"\" dom  " << dom  <<std::endl; 
+#endif
+
+		if(system(cmd.str().c_str()) != 0)
+		{
+			std::cerr<<"\nFailed to run dcraw on raw image";
+		}
+		else
+		{
+			im = cvLoadImage(tmpname.c_str(), -1);
+			if(!im)
+			{
+				im = 0;
+				std::cerr<<"\nFailed convert to IplImage";
+			}
+#if DEBUG
+		std::cout  <<"loaded ["<<im->width<<"*"<<im->height<<" * "
+				<<im->nChannels<<"] bpp:"<<im->depth<<std::endl;
+#endif
+		
+			IplImage *im2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_32F, im->nChannels);
+			cvConvertScale(im, im2, dom);
+			cvReleaseImage(&im);
+			im = im2;
+		}
+
+		return im;
 	}
 }

@@ -30,4 +30,15 @@ namespace viz
 	 * @note assumes 1.0 scale factor 
 	 */
 	bool writePFM(const IplImage *im, const std::string& filename);
+	
+	/**
+	 * @brief constructs and IplImage from a raw image
+
+	 * @param[in] filename  name of the file
+	 * @param[in] inColor  will return the image in color
+	 * @param[in] bpp  bpp so it can return a floating point image [0-1]
+	 * @return if parsed correctly will return the appropriate IplImage or null otherwise
+	 * @warning platform dependent. Uses dcraw in nix
+	 */
+	IplImage* getIplImageFromRAW(const std::string& filename, bool inColor, int bpp);
 }
