@@ -80,16 +80,32 @@ int main ( int argc, char **argv )
 	}
 	else
 	{
+		CvScalar mean, std;
+		double min, max;
+
 		IplImage *delta= cvCloneImage(fore);
 		IplImage *deltaAbs= cvCloneImage(fore);
+
 		cvSub(back, fore, delta);
+		cvAvgSdv(delta, &mean, &std); cvMinMaxLoc(delta, &min, &max);
+		cout <<"\ndelta min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		/********/
 		cvAbsDiff(back, fore, deltaAbs);
-	
+		cvAvgSdv(deltaAbs, &mean, &std); cvMinMaxLoc(deltaAbs, &min, &max);
+		cout <<"\ndeltaAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		/********/
+
 		IplImage *diffIm= cvCloneImage(doc);
 		IplImage *diffImAbs= cvCloneImage(doc);
-		cvSub(delta, doc, diffIm);
-		cvAbsDiff(delta, doc, diffImAbs);
 
+		cvSub(delta, doc, diffIm);
+		cvAvgSdv(diffIm, &mean, &std); cvMinMaxLoc(diffIm, &min, &max);
+		cout <<"\ndiffIm min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		/********/
+		cvAbsDiff(delta, doc, diffImAbs);
+		cvAvgSdv(diffImAbs, &mean, &std); cvMinMaxLoc(diffImAbs, &min, &max);
+		cout <<"\ndiffImAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0]<<endl;
+		/********/
 		if(!writePFM(diffIm, "back.pfm") || !writePFM(delta, "delta.pfm") ||
 			!writePFM(diffImAbs, "backAbs.pfm") || !writePFM(deltaAbs, "deltaAbs.pfm"))
 		{
@@ -98,14 +114,20 @@ int main ( int argc, char **argv )
 
 		IplImage *scaled = cvCreateImage(cvSize(back->width, back->height), IPL_DEPTH_8U, back->nChannels);
 		cvConvertScaleAbs(diffIm, scaled, 255.0);
-		cvSaveImage("scaledBack.ppm", scaled);
+		cvSaveImage("dpScaledBack.ppm", scaled);
 		cvConvertScaleAbs(diffImAbs, scaled, 255.0);
-		cvSaveImage("scaledAbsBack.ppm", scaled);
+		cvSaveImage("dpScaledAbsBack.ppm", scaled);
 		cvConvertScaleAbs(delta, scaled, 255.0);
-		cvSaveImage("delta.ppm", scaled);
+		cvSaveImage("dpDelta.ppm", scaled);
 		cvConvertScaleAbs(deltaAbs, scaled, 255.0);
-		cvSaveImage("deltaAbs.ppm", scaled);
+		cvSaveImage("dpDeltaAbs.ppm", scaled);
 
+		cvConvertScaleAbs(back, scaled, 255.0);
+		cvSaveImage("dpBack.ppm", scaled);
+		cvConvertScaleAbs(fore, scaled, 255.0);
+		cvSaveImage("dpFore.ppm", scaled);
+		cvConvertScaleAbs(doc, scaled, 255.0);
+		cvSaveImage("dpDoc.ppm", scaled);
 
 
 		cvReleaseImage(&scaled);
