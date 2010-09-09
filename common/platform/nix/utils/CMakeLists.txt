@@ -17,7 +17,7 @@ FIND_FILE( DCRAW_EXE  "dcraw" "/usr/bin /bin" )
 #SET(Path "${inc}" CACHE STRING "*nix only: path to gphoto2 headers")
 
 add_library(imageutils src/imageutils.cc)
-target_link_libraries( imageutils cv highgui ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY})
+target_link_libraries( imageutils cv highgui ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY} ${boost_progam-options_LIBRARY})
 IF(DCRAW_EXE)
 MESSAGE("DCRAW_EXE  ${DCRAW_EXE}")
 SET_SOURCE_FILES_PROPERTIES( src/imageutils.cc COMPILE_FLAGS -D'DCRAW_EXE="${DCRAW_EXE}"')

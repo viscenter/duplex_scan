@@ -9,6 +9,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#include <common/utils/src/imageutils.h>
 #include <common/camera/src/camerapasimpl.h>
 #include <common/type/src/userparamsimpl.h>
 
@@ -102,6 +103,7 @@ bool CameraPASImpl::getImage(UserParams &p)
 			return false;
 		}
 
+
 		string cFormat;
 		if(!getCameraConfigValue("imageformat", cFormat))
 		{
@@ -130,9 +132,9 @@ bool CameraPASImpl::getImage(UserParams &p)
 		if(param.getFilename().empty())
 		{
 			saveRawFormat = cameraRawFormat;
-			param.setFilename("foo.jpg");
+			param.setFilename("foo.ppm");
 			if(saveRawFormat)
-				param.setFilename( "foo.CR2");
+				param.setFilename( "foo.raw");
 			cout <<"\nNo savefile name: using \""<<param.getFilename()<<"\"";
 		}
 		else
@@ -163,13 +165,19 @@ bool CameraPASImpl::getImage(UserParams &p)
 			return false;
 		}
 		
-		string cameraSaveFile("foo.jpg");
+		string cameraSaveFile("foo.ppm");
 		if(saveRawFormat)
-			cameraSaveFile = "foo.CR2";
+			cameraSaveFile = "foo.raw";
 
 		if(saveRawFormat && param.getFilename().empty())
 		{
 			cerr <<"\nGetImage():If saving raw image format, specify a filename";
+			return false;
+		}
+
+		if(param.loadImageData() && param.getBpp() && saveRawFormat)
+		{
+			cerr <<"\nSpecify a bpp to save and load a raw image";
 			return false;
 		}
 
@@ -205,25 +213,27 @@ bool CameraPASImpl::getImage(UserParams &p)
 			
 		gp_file_free(canonfile);
 		close(fd);
-		if(param.loadImageData() && !cameraRawFormat)
+		if(param.loadImageData())
 		{
+
 #if DEBUG
 			cout <<"\nloading image file \""<<param.getFilename()<<"\"";
 #endif
-			*(param.getImage()) = cvLoadImage(param.getFilename().c_str(), CV_LOAD_IMAGE_UNCHANGED);
+			if(saveRawFormat)
+			{
+
+				*(param.getImage()) = getIplImageFromRAW(param.getFilename().c_str(), param.getSaveColor(), param.getBpp());
+			}
+			else
+			{
+				*(param.getImage()) = cvLoadImage(param.getFilename().c_str(), CV_LOAD_IMAGE_UNCHANGED);
+			}
+
 			if(*param.getImage() == 0)
 			{
 				cerr <<"\nFailed to load image data";
 				return false;
 			}
-		}
-		else
-		if(!param.loadImageData() && cameraRawFormat)
-		{
-			cerr
-				<<"\nNot loading image data as raw format not currently supported"
-				<<"\nimage file \""<<param.getFilename()<<"\" saved though";
-			return false;
 		}
 			
 	}

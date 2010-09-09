@@ -18,7 +18,7 @@ INCLUDE_DIRECTORIES( ${extOpenCV2_1_INCLUDE_PATH} )
 LINK_DIRECTORIES( ${extOpenCV2_1_LIB_PATH} )
 
 add_executable(cameraTest test/src/testCamera.cc) 
-target_link_libraries( cameraTest userparams vizcamera cv highgui)
+target_link_libraries( cameraTest userparams vizcamera cv highgui  ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY} ${boost_program_options_LIBRARY})
 
 add_executable(testgphoto test/src/testgphoto.cc) 
 target_link_libraries( testgphoto userparams vizcamera cv highgui )

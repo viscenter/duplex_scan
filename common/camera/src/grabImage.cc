@@ -16,6 +16,8 @@ namespace po = boost::program_options;
 int main(int argc, char ** argv)
 {
 	std::string baseName,extension;
+	bool saveColor;
+	int bpp;
 	vector<string> shutterSpeeds;
 	po::options_description desc("Allowed options");
 	 desc.add_options()
@@ -24,6 +26,10 @@ int main(int argc, char ** argv)
 	 "output file base name")
     ("outputextension,e", po::value<string>(&extension)->default_value("jpg"), 
 	 "output file extension")
+    ("saveColor,c", po::value<bool>(&saveColor)->default_value(false), 
+	 "save the captured image in color")
+    ("bits-per-pixel,b", po::value<int>(&bpp)->default_value(0), 
+	 "bpp for a rawImage")
     ("shutterspeeds,s", po::value< vector<string> >(&shutterSpeeds), "shutter speeds");
 
 	po::positional_options_description p;
@@ -77,7 +83,7 @@ int main(int argc, char ** argv)
 				return -1;
 			}
 			cout <<".";
-			UserParamsGetImageImpl upgi(fname, &im, false ); 
+			UserParamsGetImageImpl upgi(fname, &im, false, saveColor, bpp ); 
 			if(!camera->getImage(upgi))
 			{
 				cerr<<". FAILED!";
@@ -93,7 +99,7 @@ int main(int argc, char ** argv)
 		fname = baseName + "." + extension;
 		cout <<"\nSaving "<<fname ;
 		cout <<".";
-		UserParamsGetImageImpl upgi(fname, &im, false ); 
+		UserParamsGetImageImpl upgi(fname, &im, false, saveColor, bpp ); 
 		cout <<".";
 		if(!camera->getImage(upgi))
 		{

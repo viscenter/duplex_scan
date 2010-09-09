@@ -19,4 +19,4 @@ add_executable(radiancetest tests/src/radiancetest.cc)
 target_link_libraries( radiancetest cv highgui imageutils ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY})
 
 add_executable(duplexScanStats src/duplexScanStats.cc)
-target_link_libraries( duplexScanStats cv highgui imageutils ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY})
+target_link_libraries( duplexScanStats cv highgui vizcamera ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY})

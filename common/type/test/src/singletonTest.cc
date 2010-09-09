@@ -22,7 +22,6 @@ class MyClass : public virtual Singleton<MyClass>
 
 int main(int argc, char** argv)
 {
-   MyClass *a = MyClass::getInstance();
    MyClass *b = MyClass::getInstance();
    MyClass *c = MyClass::getInstance();
 	c->hi();

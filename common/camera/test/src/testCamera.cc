@@ -51,7 +51,7 @@ int main(int argc, char ** argv)
 
 		IplImage *im = 0;
 		string fname("test.jpg");
-		UserParamsGetImageImpl upgi(fname, &im, true ); 
+		UserParamsGetImageImpl upgi(fname, &im, true, false  ); 
 		if(!(*it)->getImage(upgi))
 		{
 			cerr<<"\nFailed to getImage "<<ctn<<" camera";
@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
 		}
 
 		fname = "test2.raw";
-		UserParamsGetImageImpl upgi2(fname, 0, true);
+		UserParamsGetImageImpl upgi2(fname, 0, true, true, 12 );
 		if(!(*it)->getImage(upgi2))
 		{
 			cerr<<"\nFailed to getImage "<<ctn<<" camera";

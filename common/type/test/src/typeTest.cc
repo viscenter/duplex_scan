@@ -12,7 +12,7 @@ int main(int argc, char ** argv)
 	IplImage *im = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 3);
 	string filename("testFile"); 
 
-	UserParamsGetImageImpl gip(filename, &im);
+	UserParamsGetImageImpl gip(filename, &im, true, true, 12);
 	if( filename != gip.getFilename() && im != *gip.getImage() )
 	{
 		cerr	<<"\nUserParamsGetImageImpl accessor failure " 

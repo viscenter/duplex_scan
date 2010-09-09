@@ -39,8 +39,10 @@ namespace viz
 			 * @param[in] filename name to save the captured image to
 			 * @param[in] image image data to save captured to
 			 * @param[in] setImageData whether to set image data
+			 * @param[in] saveColor whether to save the image in a color image
+			 * @param[in] bpp bits per pixel (valid for raw modes which can have 8< bpp < 16)
 			 */
-			UserParamsGetImageImpl(std::string& filename, IplImage **image, bool setImageData=false);
+			UserParamsGetImageImpl(std::string& filename, IplImage **image, bool setImageData, bool saveColor, int bpp=0);
 
 			/**
 			 * @brief default virtual destrutor
@@ -69,24 +71,53 @@ namespace viz
 			IplImage** getImage();
 
 			/**
-			 * @brief getImageData setter
+			 * @brief loadImageData setter
 			 * 
 			 * @param[in] val sets whether the image should be caputured
 			 */
 			void setImageData(bool val) { getImageData = val;}
 
 			/**
-			 * @brief getImageData getter
+			 * @brief loadImageData getter
 			 * 
 			 * @return whether imageData is going to be set
 			 */
 			bool loadImageData() const { return getImageData; }
 
+			/**
+			 * @brief SaveColor setter
+			 * 
+			 * @param[in] val sets whether the image should be saved in color
+			 */
+			void setSaveColor(bool val) { saveColor = val;}
+
+			/**
+			 * @brief saveColor getter
+			 * 
+			 * @return whether imageData is going to be saved in color
+			 */
+			bool getSaveColor() const { return saveColor; }
+
+			/**
+			 * @brief bpp setter
+			 * 
+			 * @param[in] val sets the bits per pixel
+			 */
+			void setBpp(int val) { bpp = val;}
+
+			/**
+			 * @brief bpp getter
+			 * 
+			 * @return bits per pixel
+			 */
+			int getBpp() const { return bpp; }
+
 		
 		private:
-			std::string filename;
+			int bpp;
+			bool getImageData, saveColor;
 			IplImage **image;
-			bool getImageData;
+			std::string filename;
 	};
 
 	/**

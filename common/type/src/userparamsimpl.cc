@@ -8,16 +8,18 @@ using namespace std;
 namespace viz
 {
 
-UserParamsGetImageImpl::UserParamsGetImageImpl(std::string& filename, IplImage **image, bool getImageData)
+UserParamsGetImageImpl::UserParamsGetImageImpl(std::string& filename, IplImage **image, bool getImageData, bool saveColor, int bpp)
 	:
-		filename(filename), image(image), getImageData(getImageData)
+		bpp(bpp),
+		getImageData(getImageData), 
+		saveColor(saveColor), 
+		image(image), 
+		filename(filename)
 {
-
 }
 
 UserParamsGetImageImpl::~UserParamsGetImageImpl()
 {
-
 }
 
 string UserParamsGetImageImpl::getFilename() const
