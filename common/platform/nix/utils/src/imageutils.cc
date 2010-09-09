@@ -59,13 +59,6 @@ namespace viz
 			std::cerr<<"\nInvalid bytes read. Expected to read: " << toRead <<" bytes";
 			return 0;
 		}
-#if DEBUG
-		std::cout <<"\nimageDataRead[""] \"";
-		for(int j=0; j < 32;++j)
-			std::cout << im->imageData[j]; ;
-		std::cout <<"\"";
-#endif
-
 
 		//SCALEFACTOR AND ENDIANS CHECK
 
@@ -89,13 +82,6 @@ namespace viz
 		fout << (im->nChannels>1 ? "PF\n" : "Pf\n") 
 			  << im->width << " " << im->height << "\n" 
 			  << "-1.000000" << "\n";
-
-#if DEBUG
-		std::cout <<"\nimageDataWrite[""] \"";
-		for(int j=0; j < 32;++j)
-			std::cout << im->imageData[j]; ;
-		std::cout <<"\"";
-#endif
 
 		fout.write(im->imageData, im->imageSize);
 		if(fout.bad())
