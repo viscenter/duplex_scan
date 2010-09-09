@@ -120,19 +120,20 @@ namespace viz
 		if(inColor)
 		{
 			cmd << " -4 -c ";
-			tmpname = "tmp.ppm";
+			tmpname = "_tmp.ppm";
 		}
 		else
 		{
 		 	cmd << " -d  -4  -c ";
-			tmpname = "tmp.pgm";
+			tmpname = "_tmp.pgm";
 		}
 
 		cmd << filename;
 
 		cmd <<" >> " << tmpname;
 #if DEBUG
-		std::cout <<"\nExecuting \""<<cmd.str()<<"\" dom  " << dom  <<std::endl; 
+		std::cout <<"\nExecuting \""<<cmd.str()<<"\" scale factor:" << dom 
+					 <<std::endl; 
 #endif
 
 		if(system(cmd.str().c_str()) != 0)
@@ -147,15 +148,19 @@ namespace viz
 				im = 0;
 				std::cerr<<"\nFailed convert to IplImage";
 			}
+			else
+			{
 #if DEBUG
-		std::cout  <<"loaded ["<<im->width<<"*"<<im->height<<" * "
-				<<im->nChannels<<"] bpp:"<<im->depth<<std::endl;
+			std::cout  <<"loaded ["<<im->width<<"*"<<im->height<<" * "
+					<<im->nChannels<<"] bpp:"<<im->depth<<std::endl;
 #endif
-		
-			IplImage *im2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_32F, im->nChannels);
-			cvConvertScale(im, im2, dom);
-			cvReleaseImage(&im);
-			im = im2;
+			
+				IplImage *im2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_32F, im->nChannels);
+				cvConvertScale(im, im2, dom);
+				cvReleaseImage(&im);
+				im = im2;
+			}
+			boost::filesystem::remove(tmpname);
 		}
 
 		return im;
