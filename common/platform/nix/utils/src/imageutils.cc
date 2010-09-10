@@ -116,7 +116,7 @@ namespace viz
 
 		cmd << filename;
 
-		cmd <<" >> " << tmpname;
+		cmd <<" > " << tmpname;
 #if DEBUG
 		std::cout <<"\nExecuting \""<<cmd.str()<<"\" scale factor:" << dom 
 					 <<std::endl; 

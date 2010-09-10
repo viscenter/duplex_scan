@@ -43,9 +43,11 @@ int main ( int argc, char **argv )
 	
 	IplImage *back, *fore, *doc;
 	back=0; fore=0; doc=0;
+	CvScalar mean, std;
+	double min, max;
 
 	cout<<"\nLoading file \""<<backName<<"\" ...";
-	back = getIplImageFromRAW(backName, false, 12);
+	back = getIplImageFromRAW(backName, false, 16);
 	if(!back)
 	{
 		cerr<<"\nFailed to load back lit image";
@@ -53,9 +55,11 @@ int main ( int argc, char **argv )
 	}
 	cout  <<"["<<back->width<<"*"<<back->height<<" * "
 			<<back->nChannels<<"] bpp:"<<back->depth<<endl;
+	cvAvgSdv(back, &mean, &std); cvMinMaxLoc(back, &min, &max);
+	cout <<"\ndelta min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
 
 	cout<<"\nLoading file \""<<foreName<<"\" ...";
-	fore = getIplImageFromRAW(foreName, false, 12);
+	fore = getIplImageFromRAW(foreName, false, 16);
 	if(!fore)
 	{
 		cerr<<"\nFailed to load fore lit image";
@@ -63,9 +67,11 @@ int main ( int argc, char **argv )
 	}
 	cout  <<"["<<fore->width<<"*"<<fore->height<<" * "
 			<<fore->nChannels<<"] bpp:"<<fore->depth<<endl;
+	cvAvgSdv(fore, &mean, &std); cvMinMaxLoc(fore, &min, &max);
+	cout <<"\ndelta min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
 	
 	cout<<"\nLoading file \""<<docName<<"\" ...";
-	doc = getIplImageFromRAW(docName, false, 12);
+	doc = getIplImageFromRAW(docName, false, 16);
 	if(!doc)
 	{
 		cerr<<"\nFailed to load doc lit image";
@@ -73,6 +79,9 @@ int main ( int argc, char **argv )
 	}
 	cout  <<"["<<doc->width<<"*"<<doc->height<<" * "
 			<<doc->nChannels<<"] bpp:"<<doc->depth<<endl;
+	cvAvgSdv(doc, &mean, &std); cvMinMaxLoc(doc, &min, &max);
+	cout <<"\ndelta min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+	cvSaveImage("doc.raw.pgm", doc);
 
 	if((back->imageSize != fore->imageSize) || (fore->imageSize !=  doc->imageSize))
 	{
@@ -80,8 +89,6 @@ int main ( int argc, char **argv )
 	}
 	else
 	{
-		CvScalar mean, std;
-		double min, max;
 
 		IplImage *delta= cvCloneImage(fore);
 		IplImage *deltaAbs= cvCloneImage(fore);
