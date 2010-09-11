@@ -38,7 +38,7 @@ namespace viz
 	 * @param[in] inColor  will return the image in color
 	 * @param[in] bpp  bpp so it can return a floating point image [0-1]
 	 * @return if parsed correctly will return the appropriate IplImage or null otherwise
-	 * @warning platform dependent. Uses dcraw in nix
+	 * @warning platform dependent. Uses ufraw-batch in nix
 	 */
 	IplImage* getIplImageFromRAW(const std::string& filename, bool inColor, int bpp);
 }

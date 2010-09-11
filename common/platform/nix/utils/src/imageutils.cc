@@ -102,21 +102,21 @@ namespace viz
 		double dom = 1.0/((1<<bpp) -1);
 
 
-		cmd << DCRAW_EXE;
+		cmd << UFRAW_BATCH_EXE;
 		if(inColor)
 		{
-			cmd << " -4 -c ";
+			cmd << " --grayscale=none  ";
 			tmpname = "_tmp.ppm";
 		}
 		else
 		{
-		 	cmd << " -d  -4  -c ";
+			cmd << " --grayscale=value ";
 			tmpname = "_tmp.pgm";
 		}
 
-		cmd << filename;
+		cmd <<" --silent --overwrite --wb=camera --out-depth=16 --output=" << tmpname;
+		cmd << " " <<filename;
 
-		cmd <<" > " << tmpname;
 #if DEBUG
 		std::cout <<"\nExecuting \""<<cmd.str()<<"\" scale factor:" << dom 
 					 <<std::endl; 
@@ -124,7 +124,7 @@ namespace viz
 
 		if(system(cmd.str().c_str()) != 0)
 		{
-			std::cerr<<"\nFailed to run dcraw on raw image";
+			std::cerr<<"\nFailed to run ufraw-batch on raw image";
 		}
 		else
 		{
