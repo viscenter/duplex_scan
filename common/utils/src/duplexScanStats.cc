@@ -18,10 +18,10 @@ int main ( int argc, char **argv )
 {
 
 	string backName, foreName, docName;
-	int bpp=12;
+	int bpp=16;
 	if(argc < 4)
 	{
-		cerr<<"\nUsage: "<<argv[0] <<" <back_lit.raw> <fore_lit.raw> <document.raw> [bpp]\n" ;
+		cerr<<"\nUsage: "<<argv[0] <<" <backLightOnlyNoDoc.raw> <docBacklightON.raw> <docBacklightOFF.raw> [bpp]\n" ;
 		return EXIT_FAILURE;
 	}
 
@@ -47,7 +47,7 @@ int main ( int argc, char **argv )
 	double min, max;
 
 	cout<<"\nLoading file \""<<backName<<"\" ...";
-	back = getIplImageFromRAW(backName, false, 16);
+	back = getIplImageFromRAW(backName, false, bpp);
 	if(!back)
 	{
 		cerr<<"\nFailed to load back lit image";
@@ -59,7 +59,7 @@ int main ( int argc, char **argv )
 	cout <<"\ndelta min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
 
 	cout<<"\nLoading file \""<<foreName<<"\" ...";
-	fore = getIplImageFromRAW(foreName, false, 16);
+	fore = getIplImageFromRAW(foreName, false, bpp);
 	if(!fore)
 	{
 		cerr<<"\nFailed to load fore lit image";
@@ -71,7 +71,7 @@ int main ( int argc, char **argv )
 	cout <<"\ndelta min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
 	
 	cout<<"\nLoading file \""<<docName<<"\" ...";
-	doc = getIplImageFromRAW(docName, false, 16);
+	doc = getIplImageFromRAW(docName, false, bpp);
 	if(!doc)
 	{
 		cerr<<"\nFailed to load doc lit image";
@@ -113,11 +113,13 @@ int main ( int argc, char **argv )
 		cvAvgSdv(diffImAbs, &mean, &std); cvMinMaxLoc(diffImAbs, &min, &max);
 		cout <<"\ndiffImAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0]<<endl;
 		/********/
+		/*
 		if(!writePFM(diffIm, "back.pfm") || !writePFM(delta, "delta.pfm") ||
 			!writePFM(diffImAbs, "backAbs.pfm") || !writePFM(deltaAbs, "deltaAbs.pfm"))
 		{
 			cerr<<"\nFailed to write back,delta pfm's";
 		}
+		*/
 
 		IplImage *scaled = cvCreateImage(cvSize(back->width, back->height), IPL_DEPTH_8U, back->nChannels);
 		cvConvertScaleAbs(diffIm, scaled, 255.0);
