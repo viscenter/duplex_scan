@@ -7,12 +7,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "boost/filesystem.hpp" 
+#include <boost/filesystem.hpp> 
+#include <boost/program_options.hpp> 
 
 #define TEST 0
 using namespace std;
 using namespace viz;
 using namespace boost::filesystem;
+namespace po = boost::program_options;
 
 /**
  * @todo use boost_program options
@@ -24,71 +26,90 @@ using namespace boost::filesystem;
 
 int main ( int argc, char **argv )
 {
-
 	string backName, foreName, docName;
-	int bpp=16;
-	if(argc < 4)
-	{
-		cerr<<"\nUsage: "<<argv[0] <<" <backLightOnlyNoDoc.raw> <docBacklightON.raw> <docBacklightOFF.raw> [bpp]\n" ;
-		return EXIT_FAILURE;
-	}
+	int bpp;
+	bool verb, saveInter;
+	po::options_description desc("Allowed options");
+	desc.add_options()
+   ("help,h", "help message")
+   ("back,b", po::value<string>(&backName),"output file base name")
+   ("fore,f", po::value<string>(&foreName),"output file base name")
+   ("doc,d", po::value<string>(&docName),"output file base name")
+   ("bits-per-pixel", po::value<int>(&bpp)->default_value(16),
+	 "bpp for a rawImage")
+   ("verbose,v", po::value<bool>(&verb)->default_value(false),"verbose output")
+   ("save-intermediates,s", po::value<bool>(&saveInter)->default_value(false),
+	  "save intermediate images");
 
-	backName = argv[1];
-	foreName = argv[2];
-	docName = argv[3];
-
-	if(argc  == 5)
-	{
-		stringstream ss(argv[4]);
-		ss >> bpp;
-		if(ss.bad())
-		{
-			cerr<<"\nFailure converting bpp";
-			return EXIT_FAILURE;
-		}
-	}
-
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
+	po::notify(vm);
 	
+	if (vm.count("help")) {
+		 cout << desc << "\n";
+		 return 0;
+	}
+
+	if (!vm.count("back")||!vm.count("fore")||!vm.count("doc")) {
+		 cout << desc << "\n";
+		 return 0;
+	}
+
 	IplImage *back, *fore, *doc;
 	back=0; fore=0; doc=0;
 	CvScalar mean, std;
 	double min, max;
 
-	cout<<"\nLoading file \""<<backName<<"\" ... as the backLight only image";
+	if(verb)
+		cout<<"\nLoading file \""<<backName<<"\" ... as the backLight only image";
 	back = getIplImageFromRAW(backName, false, bpp);
 	if(!back)
 	{
 		cerr<<"\nFailed to load back lit image";
 		return EXIT_FAILURE;
 	}
+
+	if(verb)
+	{
 	cout  <<"["<<back->width<<"*"<<back->height<<" * "
 			<<back->nChannels<<"] bpp:"<<back->depth<<endl;
 	cvAvgSdv(back, &mean, &std); cvMinMaxLoc(back, &min, &max);
 	cout <<"\nbacklight min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+	}
 
-	cout<<"\nLoading file \""<<foreName<<"\" ... as the documentWith backlight";
+	if(verb)
+		cout<<"\nLoading file \""<<foreName<<"\" ... as the documentWith backlight";
 	fore = getIplImageFromRAW(foreName, false, bpp);
 	if(!fore)
 	{
 		cerr<<"\nFailed to load fore lit image";
 		return EXIT_FAILURE;
 	}
-	cout  <<"["<<fore->width<<"*"<<fore->height<<" * "
-			<<fore->nChannels<<"] bpp:"<<fore->depth<<endl;
-	cvAvgSdv(fore, &mean, &std); cvMinMaxLoc(fore, &min, &max);
-	cout <<"\ndocbacklight min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+
+	if(verb)
+	{
+		cout  <<"["<<fore->width<<"*"<<fore->height<<" * "
+				<<fore->nChannels<<"] bpp:"<<fore->depth<<endl;
+		cvAvgSdv(fore, &mean, &std); cvMinMaxLoc(fore, &min, &max);
+		cout <<"\ndocbacklight min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+	}
 	
-	cout<<"\nLoading file \""<<docName<<"\" ... as the document without backlight";
+	if(verb)
+		cout<<"\nLoading file \""<<docName<<"\" ... as the document without backlight";
 	doc = getIplImageFromRAW(docName, false, bpp);
 	if(!doc)
 	{
 		cerr<<"\nFailed to load doc lit image";
 		return EXIT_FAILURE;
 	}
-	cout  <<"["<<doc->width<<"*"<<doc->height<<" * "
-			<<doc->nChannels<<"] bpp:"<<doc->depth<<endl;
-	cvAvgSdv(doc, &mean, &std); cvMinMaxLoc(doc, &min, &max);
-	cout <<"\ndoc only min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+
+	if(verb)
+	{
+		cout  <<"["<<doc->width<<"*"<<doc->height<<" * "
+				<<doc->nChannels<<"] bpp:"<<doc->depth<<endl;
+		cvAvgSdv(doc, &mean, &std); cvMinMaxLoc(doc, &min, &max);
+		cout <<"\ndoc only min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+	}
 
 	if((back->imageSize != fore->imageSize) || (fore->imageSize !=  doc->imageSize))
 	{
@@ -101,58 +122,74 @@ int main ( int argc, char **argv )
 		IplImage *varianceAbs= cvCloneImage(fore);
 
 		cvSub(back, fore, variance);
-		cvAvgSdv(variance, &mean, &std); cvMinMaxLoc(variance, &min, &max);
-		cout <<"\nvariance min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		if(verb)
+		{
+			cvAvgSdv(variance, &mean, &std); cvMinMaxLoc(variance, &min, &max);
+			cout <<"\nvariance min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		}
 		/********/
 		cvAbsDiff(back, fore, varianceAbs);
-		cvAvgSdv(varianceAbs, &mean, &std); cvMinMaxLoc(varianceAbs, &min, &max);
-		cout <<"\nvarianceAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		if(verb)
+		{
+			cvAvgSdv(varianceAbs, &mean, &std); cvMinMaxLoc(varianceAbs, &min, &max);
+			cout <<"\nvarianceAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		}
 		/********/
 
 		IplImage *diffIm= cvCloneImage(doc);
 		IplImage *diffImAbs= cvCloneImage(doc);
 
 		cvSub(variance, doc, diffIm);
-		cvAvgSdv(diffIm, &mean, &std); cvMinMaxLoc(diffIm, &min, &max);
-		cout <<"\ndiffIm min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		if(verb)
+		{
+			cvAvgSdv(diffIm, &mean, &std); cvMinMaxLoc(diffIm, &min, &max);
+			cout <<"\ndiffIm min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		}
 		/********/
 		cvAbsDiff(variance, doc, diffImAbs);
-		cvAvgSdv(diffImAbs, &mean, &std); cvMinMaxLoc(diffImAbs, &min, &max);
-		cout <<"\ndiffImAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0]<<endl;
-		/********/
-		if(!writePFM(diffIm, "back.pfm") || !writePFM(variance, "variance.pfm") ||
-			!writePFM(diffImAbs, "backAbs.pfm") || 
-			!writePFM(varianceAbs, "varianceAbs.pfm") || 
-			!writePFM(doc, "doc.pfm") ||
-			!writePFM(back, "back.pfm") ||
-			!writePFM(fore, "fore.pfm"))
+		if(verb)
 		{
-			cerr<<"\nFailed to dump raw pfm's to disk";
+			cvAvgSdv(diffImAbs, &mean, &std); cvMinMaxLoc(diffImAbs, &min, &max);
+			cout <<"\ndiffImAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0]<<endl;
 		}
+		/********/
 
-		IplImage *scaled = cvCreateImage(cvSize(back->width, back->height), IPL_DEPTH_8U, back->nChannels);
-		cvConvertScaleAbs(diffIm, scaled, 255.0);
-		cvSaveImage("dpScaledBack.ppm", scaled);
-		cvConvertScaleAbs(diffImAbs, scaled, 255.0);
-		cvSaveImage("dpScaledAbsBack.ppm", scaled);
-		cvConvertScaleAbs(variance, scaled, 255.0);
-		cvSaveImage("dpDeltaScaled.ppm", scaled);
-		cvConvertScaleAbs(varianceAbs, scaled, 255.0);
-		cvSaveImage("dpDeltaAbsScaled.ppm", scaled);
+		if(saveInter)
+		{
+			if(!writePFM(diffIm, "back.pfm") || 
+				!writePFM(variance, "variance.pfm") ||
+				!writePFM(diffImAbs, "backAbs.pfm") || 
+				!writePFM(varianceAbs, "varianceAbs.pfm") || 
+				!writePFM(doc, "doc.pfm") ||
+				!writePFM(back, "back.pfm") ||
+				!writePFM(fore, "fore.pfm"))
+			{
+				cerr<<"\nFailed to dump raw pfm's to disk";
+			}
 
-		cvSaveImage("variance.ppm", variance);
-		cvSaveImage("doc.ppm", doc);
+			IplImage *scaled = cvCreateImage(cvSize(back->width, back->height), IPL_DEPTH_8U, back->nChannels);
+			cvConvertScaleAbs(diffIm, scaled, 255.0);
+			cvSaveImage("dpScaledBack.ppm", scaled);
+			cvConvertScaleAbs(diffImAbs, scaled, 255.0);
+			cvSaveImage("dpScaledAbsBack.ppm", scaled);
+			cvConvertScaleAbs(variance, scaled, 255.0);
+			cvSaveImage("dpDeltaScaled.ppm", scaled);
+			cvConvertScaleAbs(varianceAbs, scaled, 255.0);
+			cvSaveImage("dpDeltaAbsScaled.ppm", scaled);
 
-		cvConvertScaleAbs(back, scaled, 255.0);
-		cvSaveImage("dpBack.ppm", scaled);
-		cvConvertScaleAbs(fore, scaled, 255.0);
-		cvSaveImage("dpFore.ppm", scaled);
-		cvConvertScaleAbs(doc, scaled, 255.0);
-		cvSaveImage("dpDoc.ppm", scaled);
+			cvSaveImage("variance.ppm", variance);
+			cvSaveImage("doc.ppm", doc);
+
+			cvConvertScaleAbs(back, scaled, 255.0);
+			cvSaveImage("dpBack.ppm", scaled);
+			cvConvertScaleAbs(fore, scaled, 255.0);
+			cvSaveImage("dpFore.ppm", scaled);
+			cvConvertScaleAbs(doc, scaled, 255.0);
+			cvSaveImage("dpDoc.ppm", scaled);
 
 
-		cvReleaseImage(&scaled);
-
+			cvReleaseImage(&scaled);
+		}
 
 		cvReleaseImage(&diffIm);
 		cvReleaseImage(&diffImAbs);
