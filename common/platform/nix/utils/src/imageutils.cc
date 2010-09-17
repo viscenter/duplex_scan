@@ -1,3 +1,5 @@
+#include <common/utils/src/imageutils.h>
+
 #include <cstdlib>
 
 #include <iostream>
@@ -150,5 +152,172 @@ namespace viz
 		}
 
 		return im;
+	}
+
+	bool writePlot(const IplImage* im, const std::string filename)
+	{
+		if(0 == im || filename.empty())
+		{
+			std::cerr<<"\ninvalid parameters";
+			return false;
+		}
+		std::ofstream fout(filename.c_str(), std::ios::trunc);
+		if(!fout.good())
+		{
+			std::cerr<<"\nFailed to open output file: \""<<filename<<"\"";
+			return false;
+		}
+		if(im->nChannels > 1)
+			std::cerr<<"\nImage plot to \""<<filename<<"\" only using first channel";
+
+#if DEBUG
+			std::cout  <<"loaded ["<<im->width<<"*"<<im->height<<" * "
+					<<im->nChannels<<"] bpp:"<<im->depth<<std::endl;
+#endif
+
+		switch(im->depth)
+		{
+			case IPL_DEPTH_8U:
+			{
+#if DEBUG
+			std::cout<<"8U\n";
+#endif
+
+				const u_char *data = reinterpret_cast<const u_char*>(im->imageData);
+				if(!data)
+				{
+					std::cerr<<"\nCast failed";
+					return false;
+				}
+
+				dumpData<u_char>(im, data, fout);
+			}
+			break;
+
+			case IPL_DEPTH_8S:
+			{
+#if DEBUG
+			std::cout<<"8S\n";
+#endif
+				const char *data = reinterpret_cast<const char*>(im->imageData);
+				if(!data)
+				{
+					std::cerr<<"\nCast failed";
+					return false;
+				}
+				dumpData<char>(im, data, fout);
+
+			}
+			break;
+
+
+			case IPL_DEPTH_16U:
+			{
+#if DEBUG
+			std::cout<<"16U\n";
+#endif
+				const u_short *data = reinterpret_cast<const u_short*>(im->imageData);
+				if(!data)
+				{
+					std::cerr<<"\nCast failed";
+					return false;
+				}
+
+				dumpData<u_short>(im, data, fout);
+			}
+			break;
+
+
+			case IPL_DEPTH_16S:
+			{
+#if DEBUG
+			std::cout<<"16S\n";
+#endif
+				const short *data = reinterpret_cast<const short*>(im->imageData);
+				if(!data)
+				{
+					std::cerr<<"\nCast failed";
+					return false;
+				}
+
+				dumpData<short>(im, data, fout);
+			}
+			break;
+
+
+			case IPL_DEPTH_32S:
+			{
+#if DEBUG
+			std::cout<<"32S\n";
+#endif
+				const int *data = reinterpret_cast<const int*>(im->imageData);
+				if(!data)
+				{
+					std::cerr<<"\nCast failed";
+					return false;
+				}
+				dumpData<int>(im, data, fout);
+
+			}
+			break;
+
+
+
+			case IPL_DEPTH_32F:
+			{
+#if DEBUG
+			std::cout<<"32F\n";
+#endif
+				const float *data = reinterpret_cast<const float*>(im->imageData);
+				if(!data)
+				{
+					std::cerr<<"\nCast failed";
+					return false;
+				}
+				dumpData<float>(im, data, fout);
+			}
+			break;
+
+			case IPL_DEPTH_64F:
+			{
+#if DEBUG
+			std::cout<<"64F\n";
+#endif
+				const double *data = reinterpret_cast<const double*>(im->imageData);
+				if(!data)
+				{
+					std::cerr<<"\nCast failed";
+					return false;
+				}
+
+				dumpData<double>(im, data, fout);
+
+			}
+			break;
+
+
+			default:
+			{
+				std::cerr<<"\nInvalid image depth";
+				return false;
+			}
+			break;
+
+		}
+		fout.close();
+
+		return true;
+	}
+
+	template<typename T>
+	bool dumpData(const IplImage *im, const T *data, std::ofstream& fout)
+	{
+
+		for(int y=0;y< im->height;++y)
+			for(int x=0; x<im->width;++x)
+				fout << x << " " << y << " " 
+						<< data[x*im->nChannels + im->widthStep*y] <<std::endl;
+
+		return true;
 	}
 }

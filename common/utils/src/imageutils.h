@@ -7,6 +7,7 @@
 #pragma once
  
 #include <string>
+#include <fstream>
 #include <opencv/cv.h>
 
 namespace viz
@@ -41,4 +42,16 @@ namespace viz
 	 * @warning platform dependent. Uses ufraw-batch in nix
 	 */
 	IplImage* getIplImageFromRAW(const std::string& filename, bool inColor, int bpp);
+
+	/**
+	 * @brief writes an IplImage as a gnuplot file x y value
+	 *
+	 * @param[in] im IplImage  (only first channel used as value for multichannel image
+	 * @param[in] filename to write data to
+	 * @return the image is valid and the filesize is writable
+	 */
+	bool writePlot(const IplImage* im, const std::string filename);
+
+	template<typename T>
+	bool dumpData(const IplImage *im, const T *data, std::ofstream& fout);
 }

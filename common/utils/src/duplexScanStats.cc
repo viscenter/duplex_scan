@@ -28,18 +28,19 @@ int main ( int argc, char **argv )
 {
 	string backName, foreName, docName;
 	int bpp;
-	bool verb, saveInter;
+	bool verb, saveInter, plots;
 	po::options_description desc("Allowed options");
 	desc.add_options()
    ("help,h", "help message")
-   ("back,b", po::value<string>(&backName),"output file base name")
-   ("fore,f", po::value<string>(&foreName),"output file base name")
-   ("doc,d", po::value<string>(&docName),"output file base name")
+   ("back,b", po::value<string>(&backName),"backlight only")
+   ("fore,f", po::value<string>(&foreName),"document with backlight")
+   ("doc,d", po::value<string>(&docName),"document without backlight")
    ("bits-per-pixel", po::value<int>(&bpp)->default_value(16),
 	 "bpp for a rawImage")
-   ("verbose,v", po::value<bool>(&verb)->default_value(false),"verbose output")
-   ("save-intermediates,s", po::value<bool>(&saveInter)->default_value(false),
-	  "save intermediate images");
+   //("verbose,v", po::value<bool>(&verb)->default_value(false),"verbose output")
+   ("verbose,v", "verbose output")
+   ("generate-plots,p", "generate plots")
+   ("save-intermediates,s", "save intermediate images");
 
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -54,6 +55,10 @@ int main ( int argc, char **argv )
 		 cout << desc << "\n";
 		 return 0;
 	}
+
+	verb = (vm.count("verbose") > 0);
+	plots = (vm.count("generate-plots") > 0);
+	saveInter = (vm.count("save-intermediates") > 0);
 
 	IplImage *back, *fore, *doc;
 	back=0; fore=0; doc=0;
@@ -190,6 +195,21 @@ int main ( int argc, char **argv )
 
 			cvReleaseImage(&scaled);
 		}
+
+		if(plots)
+		{
+			if(!writePlot(diffIm, "diffPlot.dat") || 
+				!writePlot(diffImAbs, "diffAbsPlot.dat") ||
+				!writePlot(variance, "variancePlot.dat") ||
+				!writePlot(varianceAbs, "varianceAbsPlot.dat"))
+			{
+				 cerr<<"\nFailed to write plot files";
+			}
+		}
+
+
+
+
 
 		cvReleaseImage(&diffIm);
 		cvReleaseImage(&diffImAbs);
