@@ -32,23 +32,30 @@ namespace viz
 		getline(fin, header);
 		if( header == "PF")
 			channels = 3;
-		else if( header != "Pf")
+		else if( header == "Pf")
 			channels = 1;
 		else
 		{
-			std::cerr<<"\nBad header. ";
+			std::cerr<<"\nBad header. \""<< header<<"\"";
 			return 0;
 			fin.close();
 		}
 		getline(fin, header);
 		std::stringstream ss(header);
 		ss >> width >> height;
+		//std::cerr<<"\nwxh header\""<< header<<"\"";
+		//std::cerr<<"\nwxh "<< width<<" x "<<height;
 
 		getline(fin, header);
+		ss.str(""); ss.clear();
 		ss.str(header);
 		ss >> sf;
+		//std::cerr<<"\nheader sf\""<< header<<"\"";
+		//std::cerr<<"\nsf "<<sf;
 
 		im = cvCreateImage(cvSize(width, height), IPL_DEPTH_32F, channels);
+		//std::cerr<<"\nImage orient =" << im->origin <<std::endl;
+		im->origin = 1; // pfm specified with bottom left origin
 		int toRead = width * height * channels * sizeof(float);
 #if DEBUG
 		std::cout <<"\nWidthStep: "<< im->widthStep << " row Length: "<<width*channels*sizeof(float)<< " toRead: " << toRead << " sf: "<< sf<< std::endl;
@@ -85,7 +92,18 @@ namespace viz
 			  << im->width << " " << im->height << "\n" 
 			  << "-1.000000" << "\n";
 
-		fout.write(im->imageData, im->imageSize);
+		if(im->origin == 1 ) //pfm expect bottom/top left to right origin
+			fout.write(im->imageData, im->imageSize);
+		else
+		{
+			long count = im->imageSize;
+			while( count > 0 )
+			{
+				fout.write(im->imageData+count-(im->widthStep), im->widthStep);
+				count -= im->widthStep;
+			}
+
+		}
 		if(fout.bad())
 		{
 			std::cerr<<"\nI/O error occured during write:";

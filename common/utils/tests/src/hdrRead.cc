@@ -18,9 +18,9 @@ int main ( int argc, char **argv )
 
 	cout<<"Loading file \""<<filename<<"\"" <<endl;
 	IplImage *im = 0; 
-	if(0 != (im=cvLoadImage(filename.c_str(), -1)) || 
-		0 != (im=getIplImageFromPFM(filename.c_str())) || 
-		0 != (im=getIplImageFromRAW(filename.c_str(), true, 16)))
+	if(0 == (im=cvLoadImage(filename.c_str(), -1)) && 
+		0 == (im=getIplImageFromPFM(filename.c_str())) && 
+		0 == (im=getIplImageFromRAW(filename.c_str(), true, 16)))
 	{
 		cerr<<"\nFailed to load image file "<<endl;
 		return -1;
