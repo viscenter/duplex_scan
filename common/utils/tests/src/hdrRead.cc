@@ -37,7 +37,7 @@ int main ( int argc, char **argv )
 
 	if(display)
 	{
-		cvNamedWindow( "My Window", 1 );
+		cvNamedWindow( "My Window", 0 );
 		cvShowImage( "My Window", im );
 		cvWaitKey();
 		cvDestroyWindow("My Window");

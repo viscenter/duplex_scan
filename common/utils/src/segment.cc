@@ -16,10 +16,11 @@ using namespace viz;
 using namespace boost::filesystem;
 namespace po = boost::program_options;
 
-IplImage *dim, *im,* im8U;
+IplImage *dim, *im, *tmp, *tmp2;
 string win("Thresh Window");
 int thresh1Int, thresh2Int;
-	double thresh1, thresh2;
+double thresh1, thresh2, mi, mx;
+double range;
 
 void update(int val);
 
@@ -74,36 +75,39 @@ int main ( int argc, char **argv )
 	}
 
 	cout  << IplImageToString(im) <<endl;
+	dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+	tmp = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+	tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 
 	if(interactive)
 	{
 		thresh1Int = (int)(thresh1*100);
 		thresh2Int = (int)(thresh2*100);
-		cvNamedWindow( win.c_str(), -1 );
+		cvNamedWindow( win.c_str(), 0);
 		cvCreateTrackbar("low thresh", win.c_str(), &thresh1Int, 100, update);
 		cvCreateTrackbar("high thresh", win.c_str(), &thresh2Int, 100, update);
-		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-		im8U = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-
-		cvConvert(im, im8U);
-		cout  << IplImageToString(dim) <<endl;
-		cout  << IplImageToString(im8U) <<endl;
+		cvMinMaxLoc(im, &mi, &mx);
+		range = mx - mi;
+		//cout <<"\nrange: "<<range;
 
 		cvShowImage( win.c_str(), dim );
 		cvWaitKey();
 		cvDestroyWindow(win.c_str());
 
-
-		if(!ofilename.empty())
-		{
-			cvSaveImage(ofilename.c_str(), dim);
-		}
-
-		cvReleaseImage(&dim);
-		cvReleaseImage(&im8U);
-
+	}
+	else
+	{
+		update(0); //get one update in with the default values
 	}
 
+	if(!ofilename.empty())
+	{
+		cvSaveImage(ofilename.c_str(), dim);
+	}
+
+	cvReleaseImage(&dim);
+	cvReleaseImage(&tmp);
+	cvReleaseImage(&tmp2);
 	cvReleaseImage(&im);
 	return EXIT_SUCCESS;
 
@@ -113,5 +117,19 @@ void update(int val)
 {
 	//cvThreshold(im8U, dim, (int)(thresh1Int/100.0*255),255, CV_THRESH_TOZERO);
 	//cvThreshold(dim, dim, (int)(thresh2Int/100.0*255),255,CV_THRESH_TOZERO_INV);
+	//cvShowImage( win.c_str(), dim );
+	double lo = thresh1Int/100.0*range+mi;
+	double hi = thresh2Int/100.0*range+mi;
+
+	//cout<<"low: "<< thresh1Int <<"("<<lo<<")";
+	cvCmpS(im, lo,tmp, CV_CMP_LE);
+
+	//cout<<" hi: "<< thresh2Int <<"("<<hi<<") " <<endl;
+	cvCmpS(im, hi,tmp2, CV_CMP_LE);
+
+	cvCmp(tmp, tmp2, dim, CV_CMP_EQ);
+	//cout <<endl<<IplImageToString(tmp);
+	//cout <<endl<<IplImageToString(tmp2);
+	//cout <<endl<<IplImageToString(dim);
 	cvShowImage( win.c_str(), dim );
 }
