@@ -21,3 +21,6 @@ target_link_libraries( radiancetest cv highgui imageutils ${Boost_LIBRARIES} ${b
 
 add_executable(duplexScanStats src/duplexScanStats.cc)
 target_link_libraries( duplexScanStats cv highgui vizcamera ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY} ${boost_program_options_LIBRARY})
+
+add_executable(segment src/segment.cc)
+target_link_libraries( segment cv highgui vizcamera ${Boost_LIBRARIES} ${boost_filesystem_LIBRARY} ${boost_program_options_LIBRARY})
