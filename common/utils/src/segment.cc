@@ -122,7 +122,7 @@ void update(int val)
 	double hi = thresh2Int/100.0*range+mi;
 
 	//cout<<"low: "<< thresh1Int <<"("<<lo<<")";
-	cvCmpS(im, lo,tmp, CV_CMP_LE);
+	cvCmpS(im, lo,tmp, CV_CMP_GE);
 
 	//cout<<" hi: "<< thresh2Int <<"("<<hi<<") " <<endl;
 	cvCmpS(im, hi,tmp2, CV_CMP_LE);
