@@ -17,11 +17,7 @@ using namespace boost::filesystem;
 namespace po = boost::program_options;
 
 /**
- * @todo use boost_program options
  * @todo ROI information
- * @todo silent option
- * @todo dump intermediates option
- * @bug flip after pfm converstion
  */
 
 int main ( int argc, char **argv )
@@ -62,12 +58,11 @@ int main ( int argc, char **argv )
 
 	IplImage *back, *fore, *doc;
 	back=0; fore=0; doc=0;
-	CvScalar mean, std;
-	double min, max;
 
 	if(verb)
 		cout<<"\nLoading file \""<<backName<<"\" ... as the backLight only image";
 	back = getIplImageFromRAW(backName, false, bpp);
+
 	if(!back)
 	{
 		cerr<<"\nFailed to load back lit image";
@@ -76,10 +71,7 @@ int main ( int argc, char **argv )
 
 	if(verb)
 	{
-	cout  <<"["<<back->width<<"*"<<back->height<<" * "
-			<<back->nChannels<<"] bpp:"<<back->depth<<endl;
-	cvAvgSdv(back, &mean, &std); cvMinMaxLoc(back, &min, &max);
-	cout <<"\nbacklight min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		cout<<IplImageToString(back) <<endl;
 	}
 
 	if(verb)
@@ -93,10 +85,7 @@ int main ( int argc, char **argv )
 
 	if(verb)
 	{
-		cout  <<"["<<fore->width<<"*"<<fore->height<<" * "
-				<<fore->nChannels<<"] bpp:"<<fore->depth<<endl;
-		cvAvgSdv(fore, &mean, &std); cvMinMaxLoc(fore, &min, &max);
-		cout <<"\ndocbacklight min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		cout<<IplImageToString(fore) <<endl;
 	}
 	
 	if(verb)
@@ -110,10 +99,7 @@ int main ( int argc, char **argv )
 
 	if(verb)
 	{
-		cout  <<"["<<doc->width<<"*"<<doc->height<<" * "
-				<<doc->nChannels<<"] bpp:"<<doc->depth<<endl;
-		cvAvgSdv(doc, &mean, &std); cvMinMaxLoc(doc, &min, &max);
-		cout <<"\ndoc only min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+		cout<<IplImageToString(doc) <<endl;
 	}
 
 	if((back->imageSize != fore->imageSize) || (fore->imageSize !=  doc->imageSize))
@@ -129,15 +115,13 @@ int main ( int argc, char **argv )
 		cvSub(back, fore, variance);
 		if(verb)
 		{
-			cvAvgSdv(variance, &mean, &std); cvMinMaxLoc(variance, &min, &max);
-			cout <<"\nvariance min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+			cout<<"Variance Image: "<<IplImageToString(doc) <<endl;
 		}
 		/********/
 		cvAbsDiff(back, fore, varianceAbs);
 		if(verb)
 		{
-			cvAvgSdv(varianceAbs, &mean, &std); cvMinMaxLoc(varianceAbs, &min, &max);
-			cout <<"\nvarianceAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+			cout<<"VarianceABS Image: "<<IplImageToString(doc) <<endl;
 		}
 		/********/
 
@@ -147,15 +131,13 @@ int main ( int argc, char **argv )
 		cvSub(variance, doc, diffIm);
 		if(verb)
 		{
-			cvAvgSdv(diffIm, &mean, &std); cvMinMaxLoc(diffIm, &min, &max);
-			cout <<"\ndiffIm min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
+			cout<<"Backside Image: "<<IplImageToString(doc) <<endl;
 		}
 		/********/
 		cvAbsDiff(variance, doc, diffImAbs);
 		if(verb)
 		{
-			cvAvgSdv(diffImAbs, &mean, &std); cvMinMaxLoc(diffImAbs, &min, &max);
-			cout <<"\ndiffImAbs min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0]<<endl;
+			cout<<"BacksideABS Image: "<<IplImageToString(doc) <<endl;
 		}
 		/********/
 
@@ -172,6 +154,7 @@ int main ( int argc, char **argv )
 				cerr<<"\nFailed to dump raw pfm's to disk";
 			}
 
+			/*
 			IplImage *scaled = cvCreateImage(cvSize(back->width, back->height), IPL_DEPTH_8U, back->nChannels);
 			cvConvertScaleAbs(diffIm, scaled, 255.0);
 			cvSaveImage("dpScaledBack.ppm", scaled);
@@ -191,17 +174,14 @@ int main ( int argc, char **argv )
 			cvSaveImage("dpFore.ppm", scaled);
 			cvConvertScaleAbs(doc, scaled, 255.0);
 			cvSaveImage("dpDoc.ppm", scaled);
-
-
 			cvReleaseImage(&scaled);
+			*/
 		}
 
 		if(plots)
 		{
 			if(!writePlot(diffIm, "diffPlot.dat") || 
-				!writePlot(diffImAbs, "diffAbsPlot.dat") ||
-				!writePlot(variance, "variancePlot.dat") ||
-				!writePlot(varianceAbs, "varianceAbsPlot.dat"))
+				!writePlot(variance, "variancePlot.dat"))
 			{
 				 cerr<<"\nFailed to write plot files";
 			}
