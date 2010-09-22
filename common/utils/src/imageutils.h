@@ -54,4 +54,6 @@ namespace viz
 
 	template<typename T>
 	bool dumpData(const IplImage *im, const T *data, std::ofstream& fout);
+
+	std::string IplImageToString(const IplImage *im, bool includeStats=true);
 }

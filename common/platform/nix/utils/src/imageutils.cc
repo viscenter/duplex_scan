@@ -338,4 +338,66 @@ namespace viz
 
 		return true;
 	}
+
+	std::string IplImageToString(const IplImage *im, bool includeStats)
+	{
+		std::stringstream ss;
+		if(im)
+		{
+			ss  <<"["<<im->width<<"*"<<im->height<<"*"
+					<<im->nChannels<<"]@";
+
+			switch(im->depth)
+			{
+				case IPL_DEPTH_8U:
+					ss <<" uint8 bpp";
+				break;
+
+				case IPL_DEPTH_8S:
+					ss <<" int8 bpp";
+				break;
+
+				case IPL_DEPTH_16U:
+					ss <<" uint16 bpp";
+				break;
+
+				case IPL_DEPTH_16S:
+					ss <<" int16 bpp";
+				break;
+
+				case IPL_DEPTH_32S:
+					ss <<" int32 bpp";
+				break;
+
+				case IPL_DEPTH_32F:
+					ss <<" float32 bpp";
+				break;
+
+				case IPL_DEPTH_64F:
+					ss <<" double32 bpp";
+				break;
+			}
+
+			if(includeStats)
+			{
+				CvScalar mean, std;
+				double min, max;
+				cvAvgSdv(im, &mean, &std); 
+				cvMinMaxLoc(im, &min, &max);
+				ss <<" min:"<<min <<" max:"<<max;
+
+				ss << " mean:[";
+				for(int i=0;i<im->nChannels; ++i)
+					ss<<mean.val[i] << ((i+1 == im->nChannels)?"":",");
+				ss << "]";
+
+				ss << " stdDev:[";
+				for(int i=0;i<im->nChannels; ++i)
+					ss<<std.val[i] << ((i+1 == im->nChannels)?"":",");
+				ss << "]";
+			}
+		}
+
+		return ss.str();
+	}
 }

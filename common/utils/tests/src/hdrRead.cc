@@ -26,15 +26,7 @@ int main ( int argc, char **argv )
 		return -1;
 	}
 
-	cout  <<"["<<im->width<<"*"<<im->height<<" * "
-			<<im->nChannels<<"] bpp:"<<im->depth<<endl;
-	CvScalar mean, std;
-	double min, max;
-	cvAvgSdv(im, &mean, &std); cvMinMaxLoc(im, &min, &max);
-	cout <<"\ndelta min:"<<min <<" max:"<<max<<" mean:"<<mean.val[0]<<" std:"<<std.val[0];
-
-
-
+	cout  << IplImageToString(im) <<endl;
 
 	if(display)
 	{
