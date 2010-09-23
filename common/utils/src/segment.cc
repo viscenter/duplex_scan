@@ -16,8 +16,11 @@ using namespace viz;
 using namespace boost::filesystem;
 namespace po = boost::program_options;
 
+//GLOBALS for win controls
 IplImage *dim, *im, *tmp, *tmp2;
-string win("Thresh Window");
+string win("Thresholding Window");
+string lowTrack("lo threshold");
+string highTrack("hi threshold");
 int thresh1Int, thresh2Int;
 double thresh1, thresh2, mi, mx;
 double range;
@@ -29,6 +32,7 @@ int main ( int argc, char **argv )
 	string filename, ofilename;
 	int bpp;
 	bool interactive;
+	double scaleFactor;
 
 
 	po::options_description desc("Allowed options");
@@ -39,6 +43,7 @@ int main ( int argc, char **argv )
    ("bpp,b", po::value<int>(&bpp)->default_value(16),"bits per pixel for raw")
    ("low-threshold", po::value<double>(&thresh1)->default_value(0.25),"threshold value [0-1]")
    ("high-threshold", po::value<double>(&thresh2)->default_value(0.5),"threshold value [0-1]")
+   ("scale-factor,s", po::value<double>(&scaleFactor)->default_value(1.0),"scale factor use to resize image [0-10]")
    ("interactive,i", "interactive-segmentation");
 
 	po::variables_map vm;
@@ -50,7 +55,14 @@ int main ( int argc, char **argv )
 		 return 0;
 	}
 
-	if (!vm.count("input-file") && thresh1<=thresh2) 
+	if (!vm.count("input-file") 
+		&& thresh1<=thresh2 
+		&& thresh1  >0 
+		&& thresh1 <= 1
+		&& thresh2  >0 
+		&& thresh1 <= 1
+		&& scaleFactor >0 
+		&& scaleFactor <= 10) 
 	{
 		 cout << desc << "\n";
 		 return 0;
@@ -74,25 +86,43 @@ int main ( int argc, char **argv )
 		}
 	}
 
+	if(vm.count("scale-factor"))
+	{
+		cout<<"\nResizing image by factor of " <<scaleFactor;
+		tmp = cvCreateImage(cvSize(im->width*scaleFactor, im->height*scaleFactor), im->depth, im->nChannels);
+		cvResize(im, tmp, CV_INTER_CUBIC);
+		cvReleaseImage(&im);
+		im = cvCloneImage(tmp);
+		cvReleaseImage(&tmp);
+	}
+
 	cout  << IplImageToString(im) <<endl;
 	dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 	tmp = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 	tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 
+	cvZero(dim);
 	if(interactive)
 	{
 		thresh1Int = (int)(thresh1*100);
 		thresh2Int = (int)(thresh2*100);
 		cvNamedWindow( win.c_str(), 0);
-		cvCreateTrackbar("low thresh", win.c_str(), &thresh1Int, 100, update);
-		cvCreateTrackbar("high thresh", win.c_str(), &thresh2Int, 100, update);
+		cvNamedWindow( filename.c_str(), 0);
+		cvShowImage( filename.c_str(), im );
+		cvResizeWindow(filename.c_str(), 1024, 768);
+		cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
+		cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, 100, update);
 		cvMinMaxLoc(im, &mi, &mx);
 		range = mx - mi;
 		//cout <<"\nrange: "<<range;
+		update(0);
 
 		cvShowImage( win.c_str(), dim );
+		cvResizeWindow(win.c_str(), 1024, 768);
 		cvWaitKey();
 		cvDestroyWindow(win.c_str());
+		cvDestroyWindow(filename.c_str());
+
 
 	}
 	else
@@ -115,21 +145,27 @@ int main ( int argc, char **argv )
 
 void update(int val)
 {
-	//cvThreshold(im8U, dim, (int)(thresh1Int/100.0*255),255, CV_THRESH_TOZERO);
-	//cvThreshold(dim, dim, (int)(thresh2Int/100.0*255),255,CV_THRESH_TOZERO_INV);
-	//cvShowImage( win.c_str(), dim );
+	if(thresh1Int > thresh2Int)
+	{
+		thresh1Int = thresh2Int;
+		cvSetTrackbarPos(lowTrack.c_str(), win.c_str(), thresh1Int);
+		return;
+	}
+	else
+	if(thresh2Int < thresh1Int)
+	{
+		thresh2Int = thresh1Int;
+		cvSetTrackbarPos(highTrack.c_str(), win.c_str(), thresh2Int);
+		return;
+	}
+
+
 	double lo = thresh1Int/100.0*range+mi;
 	double hi = thresh2Int/100.0*range+mi;
 
-	//cout<<"low: "<< thresh1Int <<"("<<lo<<")";
 	cvCmpS(im, lo,tmp, CV_CMP_GE);
-
-	//cout<<" hi: "<< thresh2Int <<"("<<hi<<") " <<endl;
 	cvCmpS(im, hi,tmp2, CV_CMP_LE);
-
 	cvCmp(tmp, tmp2, dim, CV_CMP_EQ);
-	//cout <<endl<<IplImageToString(tmp);
-	//cout <<endl<<IplImageToString(tmp2);
-	//cout <<endl<<IplImageToString(dim);
+
 	cvShowImage( win.c_str(), dim );
 }
