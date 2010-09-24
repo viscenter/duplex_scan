@@ -72,13 +72,13 @@ int main ( int argc, char **argv )
 	interactive = (vm.count("interactive") > 0);
 
 	//cerr<< "\nreg ";
-	if(0 == (im=cvLoadImage(filename.c_str(), -1)))
+	if(0 == (im=getIplImageFromRAW(filename.c_str(), true, bpp)))
 	{
 		//cerr<< "\npfm ";
 		if(0 == (im=getIplImageFromPFM(filename.c_str())))
 		{
 			//cerr<< "\nraw ";
-			if(0 == (im=getIplImageFromRAW(filename.c_str(), true, bpp)))
+	if(0 == (im=cvLoadImage(filename.c_str(), -1)))
 			{
 				cerr<<"\nFailed to load image file \""<<filename<<"\"\n";
 				return EXIT_FAILURE;
@@ -107,9 +107,10 @@ int main ( int argc, char **argv )
 		thresh1Int = (int)(thresh1*100);
 		thresh2Int = (int)(thresh2*100);
 		cvNamedWindow( win.c_str(), 0);
+		cvResizeWindow(win.c_str(), 1024, 768);
 		cvNamedWindow( filename.c_str(), 0);
 		cvShowImage( filename.c_str(), im );
-		cvResizeWindow(filename.c_str(), 1024, 768);
+		cvResizeWindow(filename.c_str(), 640, 480);
 		cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
 		cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, 100, update);
 		cvMinMaxLoc(im, &mi, &mx);
@@ -118,7 +119,6 @@ int main ( int argc, char **argv )
 		update(0);
 
 		cvShowImage( win.c_str(), dim );
-		cvResizeWindow(win.c_str(), 1024, 768);
 		cvWaitKey();
 		cvDestroyWindow(win.c_str());
 		cvDestroyWindow(filename.c_str());

@@ -143,9 +143,9 @@ int main ( int argc, char **argv )
 
 		if(saveInter)
 		{
-			if(!writePFM(diffIm, "back.pfm") || 
+			if(!writePFM(diffIm, "backText.pfm") || 
 				!writePFM(variance, "variance.pfm") ||
-				!writePFM(diffImAbs, "backAbs.pfm") || 
+				!writePFM(diffImAbs, "backTextAbs.pfm") || 
 				!writePFM(varianceAbs, "varianceAbs.pfm") || 
 				!writePFM(doc, "doc.pfm") ||
 				!writePFM(back, "back.pfm") ||
