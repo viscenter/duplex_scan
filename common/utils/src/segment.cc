@@ -31,7 +31,7 @@ int main ( int argc, char **argv )
 {
 	string filename, ofilename;
 	int bpp;
-	bool interactive;
+	bool interactive, tMet, pMet;
 	double scaleFactor;
 
 
@@ -44,7 +44,9 @@ int main ( int argc, char **argv )
    ("low-threshold", po::value<double>(&thresh1)->default_value(0.25),"threshold value [0-1]")
    ("high-threshold", po::value<double>(&thresh2)->default_value(0.5),"threshold value [0-1]")
    ("scale-factor,s", po::value<double>(&scaleFactor)->default_value(1.0),"scale factor use to resize image [0-10]")
-   ("interactive,i", "interactive-segmentation");
+   ("interactive,i", "interactive-segmentation")
+   ("threshold-segmentation,t", "bi-level thresholding for image segmentation")
+   ("pyramid-segmentation,p", "pyramid segmentation");
 
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -55,21 +57,25 @@ int main ( int argc, char **argv )
 		 return 0;
 	}
 
-	if (!vm.count("input-file") 
-		&& thresh1<=thresh2 
-		&& thresh1  >0 
-		&& thresh1 <= 1
-		&& thresh2  >0 
-		&& thresh1 <= 1
-		&& scaleFactor >0 
-		&& scaleFactor <= 10) 
+	interactive = (vm.count("interactive") > 0);
+	tMet = (vm.count("threshold-segmentation") > 0);
+	pMet = (vm.count("pyramid-segmentation") > 0);
+
+	if ( (vm.count("input-file") == 0)
+		|| thresh1>thresh2 
+		|| thresh1 < 0 
+		|| thresh1 > 1
+		|| thresh2 < 0 
+		|| thresh2 > 1
+		|| !(tMet^pMet) 
+		|| scaleFactor < 0 
+		|| scaleFactor > 10) 
 	{
 		 cout << desc << "\n";
 		 return 0;
 	}
 	 
 
-	interactive = (vm.count("interactive") > 0);
 
 	//cerr<< "\nreg ";
 	if(0 == (im=getIplImageFromRAW(filename.c_str(), true, bpp)))
@@ -106,17 +112,25 @@ int main ( int argc, char **argv )
 	{
 		thresh1Int = (int)(thresh1*100);
 		thresh2Int = (int)(thresh2*100);
-		cvNamedWindow( win.c_str(), 0);
-		cvResizeWindow(win.c_str(), 1024, 768);
 		cvNamedWindow( filename.c_str(), 0);
 		cvShowImage( filename.c_str(), im );
 		cvResizeWindow(filename.c_str(), 640, 480);
-		cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
-		cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, 100, update);
-		cvMinMaxLoc(im, &mi, &mx);
-		range = mx - mi;
-		//cout <<"\nrange: "<<range;
-		update(0);
+
+		if(tMet)
+		{
+			cvNamedWindow( win.c_str(), 0);
+			cvResizeWindow(win.c_str(), 1024, 768);
+			cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
+			cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, 100, update);
+			cvMinMaxLoc(im, &mi, &mx);
+			range = mx - mi;
+			//cout <<"\nrange: "<<range;
+			update(0);
+		}
+		else
+		{
+
+		}
 
 		cvShowImage( win.c_str(), dim );
 		cvWaitKey();
