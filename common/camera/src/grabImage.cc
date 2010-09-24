@@ -28,7 +28,7 @@ int main(int argc, char ** argv)
 	 "output file extension")
     ("saveColor,c", po::value<bool>(&saveColor)->default_value(false), 
 	 "save the captured image in color")
-    ("bits-per-pixel,b", po::value<int>(&bpp)->default_value(0), 
+    ("bits-per-pixel,b", po::value<int>(&bpp)->default_value(16), 
 	 "bpp for a rawImage")
     ("shutterspeeds,s", po::value< vector<string> >(&shutterSpeeds), "shutter speeds");
 

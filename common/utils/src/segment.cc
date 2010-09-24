@@ -24,6 +24,7 @@ string highTrack("hi threshold");
 int thresh1Int, thresh2Int;
 double thresh1, thresh2, mi, mx;
 double range;
+bool interactive, tMet, pMet;
 
 void update(int val);
 
@@ -31,7 +32,6 @@ int main ( int argc, char **argv )
 {
 	string filename, ofilename;
 	int bpp;
-	bool interactive, tMet, pMet;
 	double scaleFactor;
 
 
@@ -103,7 +103,12 @@ int main ( int argc, char **argv )
 	}
 
 	cout  << IplImageToString(im) <<endl;
-	dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+	if(tMet)
+		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+	else
+	if(pMet)
+		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 3);
+
 	tmp = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 	tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 
@@ -126,13 +131,13 @@ int main ( int argc, char **argv )
 			range = mx - mi;
 			//cout <<"\nrange: "<<range;
 			update(0);
+			cvShowImage( win.c_str(), dim );
 		}
 		else
 		{
 
 		}
 
-		cvShowImage( win.c_str(), dim );
 		cvWaitKey();
 		cvDestroyWindow(win.c_str());
 		cvDestroyWindow(filename.c_str());
@@ -173,13 +178,23 @@ void update(int val)
 		return;
 	}
 
-
 	double lo = thresh1Int/100.0*range+mi;
 	double hi = thresh2Int/100.0*range+mi;
 
-	cvCmpS(im, lo,tmp, CV_CMP_GE);
-	cvCmpS(im, hi,tmp2, CV_CMP_LE);
-	cvCmp(tmp, tmp2, dim, CV_CMP_EQ);
+	if(tMet)
+	{
+
+		cvCmpS(im, lo,tmp, CV_CMP_GE);
+		cvCmpS(im, hi,tmp2, CV_CMP_LE);
+		cvCmp(tmp, tmp2, dim, CV_CMP_EQ);
+	}
+	else
+	if(pMet)
+	{
+
+
+
+	}
 
 	cvShowImage( win.c_str(), dim );
 }
