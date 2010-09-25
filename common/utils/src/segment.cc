@@ -17,7 +17,7 @@ using namespace boost::filesystem;
 namespace po = boost::program_options;
 
 //GLOBALS for win controls
-IplImage *dim, *im, *tmp, *tmp2;
+IplImage *dim=0, *im=0, *tmp=0, *tmp2=0, *scaled=0;
 string win("Thresholding Window");
 string lowTrack("lo threshold");
 string highTrack("hi threshold");
@@ -25,6 +25,9 @@ int thresh1Int, thresh2Int;
 double thresh1, thresh2, mi, mx;
 double range;
 bool interactive, tMet, pMet;
+CvSeq *comp;
+CvMemStorage *storage;
+int level = 4;
 
 void update(int val);
 
@@ -84,7 +87,7 @@ int main ( int argc, char **argv )
 		if(0 == (im=getIplImageFromPFM(filename.c_str())))
 		{
 			//cerr<< "\nraw ";
-	if(0 == (im=cvLoadImage(filename.c_str(), -1)))
+			if(0 == (im=cvLoadImage(filename.c_str(), -1)))
 			{
 				cerr<<"\nFailed to load image file \""<<filename<<"\"\n";
 				return EXIT_FAILURE;
@@ -103,11 +106,14 @@ int main ( int argc, char **argv )
 	}
 
 	cout  << IplImageToString(im) <<endl;
+	/*(
 	if(tMet)
 		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 	else
 	if(pMet)
 		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 3);
+	*/
+	dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 
 	tmp = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 	tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
@@ -120,24 +126,35 @@ int main ( int argc, char **argv )
 		cvNamedWindow( filename.c_str(), 0);
 		cvShowImage( filename.c_str(), im );
 		cvResizeWindow(filename.c_str(), 640, 480);
+		cvNamedWindow( win.c_str(), 0);
+		cvResizeWindow(win.c_str(), 1024, 768);
+		cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
+		cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, 100, update);
 
 		if(tMet)
 		{
-			cvNamedWindow( win.c_str(), 0);
-			cvResizeWindow(win.c_str(), 1024, 768);
-			cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
-			cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, 100, update);
 			cvMinMaxLoc(im, &mi, &mx);
 			range = mx - mi;
 			//cout <<"\nrange: "<<range;
-			update(0);
-			cvShowImage( win.c_str(), dim );
 		}
 		else
+		if(pMet)
 		{
-
+			storage = cvCreateMemStorage ( 1000 );
+			if(im->depth > 8 )
+			{
+				scaled = cvCreateImage(cvSize(im->width, im->height), 
+								IPL_DEPTH_8U, im->nChannels);
+				cvConvertScaleAbs(im, scaled, 255.0);
+			}
+			else
+			{
+				scaled = cvCloneImage(im);
+			}
 		}
 
+		update(0);
+		cvShowImage( win.c_str(), dim );
 		cvWaitKey();
 		cvDestroyWindow(win.c_str());
 		cvDestroyWindow(filename.c_str());
@@ -153,6 +170,13 @@ int main ( int argc, char **argv )
 	{
 		cvSaveImage(ofilename.c_str(), dim);
 	}
+
+	if(pMet)
+	{
+		cvReleaseMemStorage(&storage);
+		cvReleaseImage(&scaled);
+	}
+
 
 	cvReleaseImage(&dim);
 	cvReleaseImage(&tmp);
@@ -191,7 +215,10 @@ void update(int val)
 	else
 	if(pMet)
 	{
-
+		cvPyrSegmentation(scaled, dim, storage, &comp,
+				                      level, 
+											 (int)thresh1Int/100.0*255, 
+											 (int)thresh2Int/100.0*255); 
 
 	}
 
