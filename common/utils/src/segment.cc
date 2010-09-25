@@ -193,7 +193,6 @@ void update(int val)
 	{
 
 
-
 	}
 
 	cvShowImage( win.c_str(), dim );

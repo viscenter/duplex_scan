@@ -28,9 +28,9 @@ int main ( int argc, char **argv )
 	po::options_description desc("Allowed options");
 	desc.add_options()
    ("help,h", "help message")
-   ("back,b", po::value<string>(&backName),"backlight only")
-   ("fore,f", po::value<string>(&foreName),"document with backlight")
-   ("doc,d", po::value<string>(&docName),"document without backlight")
+   ("backlight-only,b", po::value<string>(&backName),"backlight only")
+   ("doc-backlit,d", po::value<string>(&foreName),"document with backlight")
+   ("doc-no-backlight,n", po::value<string>(&docName),"document without backlight")
    ("bits-per-pixel", po::value<int>(&bpp)->default_value(16),
 	 "bpp for a rawImage")
    //("verbose,v", po::value<bool>(&verb)->default_value(false),"verbose output")
@@ -147,9 +147,9 @@ int main ( int argc, char **argv )
 				!writePFM(variance, "variance.pfm") ||
 				!writePFM(diffImAbs, "backTextAbs.pfm") || 
 				!writePFM(varianceAbs, "varianceAbs.pfm") || 
-				!writePFM(doc, "doc.pfm") ||
-				!writePFM(back, "back.pfm") ||
-				!writePFM(fore, "fore.pfm"))
+				!writePFM(doc, "doc-no-backlight.pfm") ||
+				!writePFM(back, "backlight-only.pfm") ||
+				!writePFM(fore, "doc-backlit.pfm"))
 			{
 				cerr<<"\nFailed to dump raw pfm's to disk";
 			}
@@ -186,10 +186,6 @@ int main ( int argc, char **argv )
 				 cerr<<"\nFailed to write plot files";
 			}
 		}
-
-
-
-
 
 		cvReleaseImage(&diffIm);
 		cvReleaseImage(&diffImAbs);
