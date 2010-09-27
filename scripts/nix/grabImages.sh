@@ -36,7 +36,7 @@ echo "Grabbing backlit document image .. \"$DIR/backlitDoc.raw\""
 echo "Place the backlight behind the document with and switch it on"
 echo "Hit Enter to capture image"
 read IN
-"$EXE" -o "$DIR"/backlitDoc -e raw 
+$EXE -o $DIR/backlitDoc -e raw 
 if [ "$?" != "0" ]; then
    echo "Failed to grab image" 1>&2
 	exit -1
@@ -47,7 +47,7 @@ echo "Grabbing document image without backlight .. \"$DIR/doc.raw\""
 echo "Switch the backlight off"
 echo "Hit Enter to capture image"
 read IN
-"$EXE" -o "$DIR"/doc -e raw
+$EXE -o "$DIR"/doc -e raw
 if [ "$?" != "0" ]; then
    echo "Failed to grab image" 1>&2
 	exit -1
@@ -59,7 +59,7 @@ echo "Carefully remove the backlight from behind the document"
 echo "Place it in the camera view and switch it on"
 echo "Hit Enter to capture image"
 read IN
-"$EXE" -o "$DIR"/backlight -e raw
+$EXE -o $DIR/backlight -e raw
 if [ "$?" != "0" ]; then
    echo "Failed to grab image" 1>&2
 	exit -1

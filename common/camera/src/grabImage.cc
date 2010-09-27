@@ -61,6 +61,7 @@ int main(int argc, char ** argv)
 	if(!camera->initialize())
 	{
 		cerr<<"\nFailed to initialize camera";
+		return EXIT_FAILURE;
 	}
 	cout <<"\nInitialized a camera type "<<camera->getType()
 				  << " named \""<<camera->getName()<<"\"";
