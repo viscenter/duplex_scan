@@ -11,7 +11,7 @@ fi
 if [ "$DIR" == "" ] ; then
 	DIR="./"
 elif [ ! -d "$DIR" ] ; then
-	mkdir $DIR
+	mkdir -p $DIR
 fi
 
 echo "This will grab 3 images."
