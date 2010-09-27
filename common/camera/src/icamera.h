@@ -38,6 +38,8 @@
  		<ul>
 			<li>g++-4.4</li> 
 			<li>libghoto2-2-dev v2.4.8</li> 
+			<li>dcraw  0.86-1</li> 
+			<li>ufraw  0.16-1</li> 
 			<li>opencv2.1 -(included with source in external/platform/nix/opencv2.1)</li> 
 		</ul>
 		<br />Run:
@@ -45,10 +47,68 @@
 		<code>
 			<br />mkdir bin; cd bin; cmake (location of source)
 			<br /><i> cmake options: -DDEBUG (debug build)</i>
+			<br /><i> to get the backtext of a document run scripts/getRearText.sh</i>
 		</code>
 		<br /><br />And your done.
 	  </p>
 	</p>
+  @section camera_sec Camera setup 
+   <p>
+		Camera Setup (tested on Canon 20D) connected via USB on linux
+ 		<ul>
+			<li>Camera mounted on a tripod where the view is set on <i>whole</i> area of the document that has backtext that needs to be extracted.</li> 
+			<li>Shooting mode - Manual</li> 
+			<li>Communication mode - Normal</li> 
+			<li>White Balance - Auto</li> 
+			<li>Quality - RAW</li> 
+			<li>Focus - Manual</li>
+			<li>Manually set the shutter and aperture it's not too bright [brightness meter should be centered when the backlight is in view]</li>
+		</ul>
+	</p>
+
+  @section run_sec Extracting back text 
+  Each part of the process is split up in to programs. However there are bash scripts scripts/getRearText.sh that automates the process
+  @subsection aquistion_subsec Aquisition 
+  This process requires 3 raw images which uses grabImage 
+  <code>
+	  <br />common/camera/grabImage -h 
+	  <br />Allowed options:
+	  <br />-h [ --help ]                            help message
+	  <br />-o [ --outputname ] arg (=capturedImage) output file base name
+	  <br />-e [ --outputextension ] arg (=raw)      output file extension
+	  <br />-c [ --saveColor ] arg (=0)              save the captured image in color
+	  <br />-b [ --bits-per-pixel ] arg (=16)        bpp for a rawImage
+	  <br />-s [ --shutterspeeds ] arg               shutter speeds
+  </code>
+  	<p>
+     <br /> This program will also allow one to capture a series of images varying shutter speeds using values similar to what <code>gphoto2 --get-config=shutterspeed</code> returns
+	  <br /> If the camera is is raw mode the -e option should either be raw or cr2
+	</p>
+
+   <p>
+ 		<ul>
+			<li></li>
+		</ul>
+	</p>
+ 
+  @subsection stat_subsec Statistic Computation 
+  This process will use the images from the previous step to extract the back text backText.pfm
+  <code>
+	<br />common/utils/duplexScanStats -h
+	<br />Allowed options:
+  	<br />-h [ --help ]                 help message
+   <br />-b [ --backlight-only ] arg   backlight only
+   <br />-d [ --doc-backlit ] arg      document with backlight
+   <br />-n [ --doc-no-backlight ] arg document without backlight
+   <br />--bits-per-pixel arg (=16)    bpp for a rawImage
+   <br />-v [ --verbose ]              verbose output
+   <br />-p [ --generate-plots ]       generate gnu plot files of images backText & variance 
+   <br />-s [ --save-intermediates ]   save intermediate images
+  </code>
+  	<p>
+	</p>
+
+
  */
 
 

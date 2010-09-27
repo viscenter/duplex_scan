@@ -22,9 +22,9 @@ int main(int argc, char ** argv)
 	po::options_description desc("Allowed options");
 	 desc.add_options()
     ("help,h", "help message")
-    ("outputname,o", po::value<string>(&baseName)->default_value("grab"), 
+    ("outputname,o", po::value<string>(&baseName)->default_value("capturedImage"), 
 	 "output file base name")
-    ("outputextension,e", po::value<string>(&extension)->default_value("jpg"), 
+    ("outputextension,e", po::value<string>(&extension)->default_value("raw"), 
 	 "output file extension")
     ("saveColor,c", po::value<bool>(&saveColor)->default_value(false), 
 	 "save the captured image in color")

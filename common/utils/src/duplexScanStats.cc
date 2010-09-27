@@ -35,7 +35,7 @@ int main ( int argc, char **argv )
 	 "bpp for a rawImage")
    //("verbose,v", po::value<bool>(&verb)->default_value(false),"verbose output")
    ("verbose,v", "verbose output")
-   ("generate-plots,p", "generate plots")
+   ("generate-plots,p", "generate gnu plot files of images backText & variance")
    ("save-intermediates,s", "save intermediate images");
 
 	po::variables_map vm;
@@ -141,13 +141,18 @@ int main ( int argc, char **argv )
 		}
 		/********/
 
+		if(!writePFM(diffIm, "backText.pfm") || 
+			!writePFM(variance, "variance.pfm") ||
+			!writePFM(diffImAbs, "backTextAbs.pfm") || 
+			!writePFM(varianceAbs, "varianceAbs.pfm") )
+		{
+			cerr<<"\nFailed to saw backText images";
+			return EXIT_FAILURE;	
+		}
+		
 		if(saveInter)
 		{
-			if(!writePFM(diffIm, "backText.pfm") || 
-				!writePFM(variance, "variance.pfm") ||
-				!writePFM(diffImAbs, "backTextAbs.pfm") || 
-				!writePFM(varianceAbs, "varianceAbs.pfm") || 
-				!writePFM(doc, "doc-no-backlight.pfm") ||
+				if(!writePFM(doc, "doc-no-backlight.pfm") ||
 				!writePFM(back, "backlight-only.pfm") ||
 				!writePFM(fore, "doc-backlit.pfm"))
 			{
@@ -180,8 +185,8 @@ int main ( int argc, char **argv )
 
 		if(plots)
 		{
-			if(!writePlot(diffIm, "diffPlot.dat") || 
-				!writePlot(variance, "variancePlot.dat"))
+			if(!writePlot(diffIm, "backText.dat") || 
+				!writePlot(variance, "variance.dat"))
 			{
 				 cerr<<"\nFailed to write plot files";
 			}
