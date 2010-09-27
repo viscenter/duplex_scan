@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
 
 	if (vm.count("help")) {
 		 cout << desc << "\n";
-		 return 0;
+		 return EXIT_FAILURE;
 	}
 	if (vm.count("shutterspeeds")) {
 		cout <<"\nSave file format \""<<baseName<<"_"<<"%d."<<extension<<"\"";
@@ -80,7 +80,7 @@ int main(int argc, char ** argv)
 				cerr<<"\nFailed to setShutter speed ("
 					 <<upss.getValue()<<")";
 				camera->finalize();
-				return -1;
+				return EXIT_FAILURE;
 			}
 			cout <<".";
 			UserParamsGetImageImpl upgi(fname, &im, false, saveColor, bpp ); 

@@ -40,3 +40,5 @@ add_subdirectory(platform/${PLATFORM})
 add_subdirectory(common/platform/${PLATFORM})
 add_subdirectory(common)
 
+file(COPY scripts/${PLATFORM}/getRearText.sh DESTINATION scripts)
+file(COPY scripts/${PLATFORM}/grabImages.sh DESTINATION scripts)

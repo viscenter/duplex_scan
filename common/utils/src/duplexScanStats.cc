@@ -44,12 +44,12 @@ int main ( int argc, char **argv )
 	
 	if (vm.count("help")) {
 		 cout << desc << "\n";
-		 return 0;
+		 return EXIT_FAILURE;
 	}
 
 	if (!vm.count("back")||!vm.count("fore")||!vm.count("doc")) {
 		 cout << desc << "\n";
-		 return 0;
+		 return EXIT_FAILURE;
 	}
 
 	verb = (vm.count("verbose") > 0);
