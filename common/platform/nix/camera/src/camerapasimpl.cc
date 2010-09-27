@@ -247,7 +247,7 @@ bool CameraPASImpl::getImage(UserParams &p)
 	return true;
 }
 
-bool CameraPASImpl::getCameraConfigValue(const string& key, string &value)
+bool CameraPASImpl::getCameraConfigValue(const std::string& key, std::string &value)
 {
 	value = "";
 	if(key.empty())
@@ -352,7 +352,7 @@ bool CameraPASImpl::setShutterSpeed(UserParams &p)
 
 	
 }
-bool CameraPASImpl::setCameraConfigValue(const string& key, string value)
+bool CameraPASImpl::setCameraConfigValue(const std::string& key, std::string value)
 {
 	if(key.empty())
 	{

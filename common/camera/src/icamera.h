@@ -14,7 +14,7 @@
 	The goals of this code are
 	<ul>
 		<li>Let it be easily extensible - uses interfaces allowing the user to define specialization for types, cameras, etc </li>
-		<li>Platform independent - the source tree is split by platform where the porting layer is clearly separate from cross platform code The build system that is in place takes care of the   </li>
+		<li>Platform independent - the source tree is split by platform where the porting layer is clearly separated from cross platform code The build system that is in place takes care of the   </li>
 	</ul>
   </p>
    <p> Supported platforms: 
@@ -67,10 +67,12 @@
 	</p>
 
   @section run_sec Extracting back text 
-  Each part of the process is split up in to programs. However there are bash scripts scripts/getRearText.sh that automates the process
+  Each part of the process is split up in to programs. However there is a script 'scripts/getRearText.sh' that automates the process
+	<br />
   @subsection aquistion_subsec Aquisition 
   This process requires 3 raw images which uses grabImage 
   <code>
+	<br />
 	  <br />common/camera/grabImage -h 
 	  <br />Allowed options:
 	  <br />-h [ --help ]                            help message
@@ -81,19 +83,16 @@
 	  <br />-s [ --shutterspeeds ] arg               shutter speeds
   </code>
   	<p>
+	<i>
      <br /> This program will also allow one to capture a series of images varying shutter speeds using values similar to what <code>gphoto2 --get-config=shutterspeed</code> returns
 	  <br /> If the camera is is raw mode the -e option should either be raw or cr2
+	</i>
 	</p>
 
-   <p>
- 		<ul>
-			<li></li>
-		</ul>
-	</p>
- 
   @subsection stat_subsec Statistic Computation 
-  This process will use the images from the previous step to extract the back text backText.pfm
+  This process will use the images from the previous step to extract the back text as backText.pfm variance.pfm
   <code>
+	<br />
 	<br />common/utils/duplexScanStats -h
 	<br />Allowed options:
   	<br />-h [ --help ]                 help message
@@ -106,10 +105,32 @@
    <br />-s [ --save-intermediates ]   save intermediate images
   </code>
   	<p>
+	<i>
+	<code>
+	<br />variance.pfm  - is the variation of the opacity of the backlit document and the back light (floating point image)
+	<br />backText.pfm  - is the variation without the fore lit document which should contain the rear text(floating point image)
+	</code>
+	</i>
 	</p>
 
-
- */
+  @subsection stat_seg Segmentation 
+  This process will use the images from the previous step to allow the user to specify thresholds using different thresholding methods to cleanly extract the back text and produce the final result
+  <code>
+	<br />
+	<br />common/utils/segment -h
+	<br />Allowed options:
+   <br />-h [ --help ]                    help message
+   <br />-f [ --input-file ] arg          input file
+   <br />-o [ --output-file ] arg         output file
+   <br />-b [ --bpp ] arg (=16)           bits per pixel for raw
+   <br />--low-threshold arg (=0.25)      threshold value [0-1]
+   <br />--high-threshold arg (=0.5)      threshold value [0-1]
+   <br />-s [ --scale-factor ] arg (=1)   scale factor use to resize image [0-10]
+   <br />-i [ --interactive ]             interactive-segmentation
+   <br />-t [ --threshold-segmentation ]  bi-level thresholding for image segmentation
+   <br />-p [ --pyramid-segmentation ]    pyramid segmentation
+  </code>
+*/
 
 
 #pragma once

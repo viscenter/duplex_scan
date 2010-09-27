@@ -52,8 +52,24 @@ namespace viz
 	 */
 	bool writePlot(const IplImage* im, const std::string filename);
 
+	
+	/**
+	 * @brief method to write IplImage raw data as valid gnu plot data
+	 *
+	 * @param[in] im IplImage 
+	 * @param[in] data im->imageDa ta pointer cast to the correct type
+	 * @param[in] fout output file to write data to 
+	 * @return true if im is valid
+	 */
 	template<typename T>
 	bool dumpData(const IplImage *im, const T *data, std::ofstream& fout);
 
+	/**
+	 * @brief prints image information as a string 
+
+	 * @param[in] im IplImage 
+	 * @param[in] includeStats also includes image stats mean & stddev
+	 * @return string which contains the image informaton
+	 */
 	std::string IplImageToString(const IplImage *im, bool includeStats=true);
 }
