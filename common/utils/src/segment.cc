@@ -10,7 +10,7 @@
 #include <boost/filesystem.hpp> 
 #include <boost/program_options.hpp> 
 
-#define TEST 0
+#define PYR_SEG 0
 using namespace std;
 using namespace viz;
 using namespace boost::filesystem;
@@ -24,7 +24,10 @@ string highTrack("hi threshold");
 int thresh1Int, thresh2Int;
 double thresh1, thresh2, mi, mx;
 double range;
-bool interactive, tMet, pMet;
+bool interactive; 
+#if PYR_SEG
+bool tMet, pMet;
+#endif
 CvSeq *comp;
 CvMemStorage *storage;
 int level = 4;
@@ -49,8 +52,13 @@ int main ( int argc, char **argv )
    ("high-threshold", po::value<double>(&thresh2)->default_value(0.5),"threshold value [0-1]")
    ("scale-factor,s", po::value<double>(&scaleFactor)->default_value(1.0),"scale factor use to resize image [0-10]")
    ("interactive,i", "interactive segmentation")
+#if PYR_SEG
    ("threshold-segmentation,t", "bi-level thresholding for image segmentation")
    ("pyramid-segmentation,p", "pyramid segmentation");
+#else
+   ("threshold-segmentation,t", "bi-level thresholding for image segmentation");
+#endif
+
 
 	po::variables_map vm;
 	po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -62,8 +70,10 @@ int main ( int argc, char **argv )
 	}
 
 	interactive = (vm.count("interactive") > 0);
+#if PYR_SEG
 	tMet = (vm.count("threshold-segmentation") > 0);
 	pMet = (vm.count("pyramid-segmentation") > 0);
+#endif
 
 	if ( (vm.count("input-file") == 0)
 	 	|| (vm.count("document") == 0)
@@ -72,7 +82,9 @@ int main ( int argc, char **argv )
 		|| thresh1 > 1
 		|| thresh2 < 0 
 		|| thresh2 > 1
+#if PYR_SEG
 		|| !(tMet^pMet) 
+#endif
 		|| scaleFactor < 0 
 		|| scaleFactor > 4) 
 	{
@@ -82,12 +94,13 @@ int main ( int argc, char **argv )
 
 	if(thresh1 == 0.25 && thresh2 == 0.5) //defaults
 		interactive = true;
-
+#if PYR_SEG
 	if(pMet)
 	{
 		lowTrack = "Link Threshold";
 		highTrack = "Cluster Threshold";
 	}
+#endif
 	 
 
 	//cerr<< "\nreg ";
@@ -125,6 +138,7 @@ int main ( int argc, char **argv )
 		cout<<"\nResizing image by factor of " <<scaleFactor;
 		imOrig = cvCloneImage(im);
 		tmp = cvCreateImage(cvSize(im->width*scaleFactor, im->height*scaleFactor), im->depth, im->nChannels);
+		tmp->origin = im->origin;
 		cvResize(im, tmp, CV_INTER_CUBIC);
 		cvReleaseImage(&im);
 		im = cvCloneImage(tmp);
@@ -132,16 +146,10 @@ int main ( int argc, char **argv )
 	}
 
 	cout  << IplImageToString(im) <<endl;
-	/*(
-	if(tMet)
-		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-	else
-	if(pMet)
-		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 3);
-	*/
 	dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-	tmp = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-	tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+	dim->origin = im->origin;
+	tmp = cvCloneImage(dim);
+	tmp2 = cvCloneImage(dim);
 
 	cvZero(dim);
 	thresh1Int = (int)(thresh1*100);
@@ -159,7 +167,7 @@ int main ( int argc, char **argv )
 		cvResizeWindow(win.c_str(), 1024, 768);
 		cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
 		cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, 100, update);
-
+#if PYR_SEG
 		if(tMet)
 		{
 			cvMinMaxLoc(im, &mi, &mx);
@@ -169,18 +177,25 @@ int main ( int argc, char **argv )
 		else
 		if(pMet)
 		{
-			storage = cvCreateMemStorage ( 1000 );
+			storage = cvCreateMemStorage();
 			if(im->depth > 8 )
 			{
 				scaled = cvCreateImage(cvSize(im->width, im->height), 
 								IPL_DEPTH_8U, im->nChannels);
+				scaled->origin = im->origin;
 				cvConvertScaleAbs(im, scaled, 255.0);
+				cout <<"\nScaled to 8bit";
 			}
 			else
 			{
 				scaled = cvCloneImage(im);
 			}
 		}
+#else
+		cvMinMaxLoc(im, &mi, &mx);
+		range = mx - mi;
+#endif
+
 		update(0);
 		cvShowImage( win.c_str(), dim );
 		cvWaitKey();
@@ -208,13 +223,15 @@ int main ( int argc, char **argv )
 
 			im = cvCloneImage(imOrig);
 			dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-			tmp = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-			tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+			dim->origin = im->origin;
+			tmp = cvCloneImage(dim);
+			tmp2 = cvCloneImage(dim);
 			cvZero(dim);
+#if PYR_SEG
 			if(tMet)
 			{
-			cvMinMaxLoc(im, &mi, &mx);
-			range = mx - mi;
+				cvMinMaxLoc(im, &mi, &mx);
+				range = mx - mi;
 			}
 			else
 			if(pMet)
@@ -223,6 +240,7 @@ int main ( int argc, char **argv )
 				{
 					scaled = cvCreateImage(cvSize(im->width, im->height), 
 									IPL_DEPTH_8U, im->nChannels);
+					scaled->origin = im->origin;
 					cvConvertScaleAbs(im, scaled, 255.0);
 				}
 				else
@@ -230,18 +248,24 @@ int main ( int argc, char **argv )
 					scaled = cvCloneImage(im);
 				}
 			}
+#else
+			cvMinMaxLoc(im, &mi, &mx);
+			range = mx - mi;
+#endif
+
 			update(0);
 			cvReleaseImage(&imOrig);
 		}
 
 		cvSaveImage(ofilename.c_str(), dim);
 	}
-
+#if PYR_SEG
 	if(pMet)
 	{
 		cvReleaseMemStorage(&storage);
 		cvReleaseImage(&scaled);
 	}
+#endif
 
 
 	cvReleaseImage(&dim);
@@ -264,9 +288,11 @@ void update(int val)
 	else
 		computing = true;
 
-	//cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int <<endl;
+	cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int <<endl;
+#if PYR_SEG
 	if(tMet)
 	{
+#endif
 		if(thresh1Int > thresh2Int)
 		{
 			thresh1Int = thresh2Int;
@@ -289,16 +315,19 @@ void update(int val)
 		cvCmpS(im, lo,tmp, CV_CMP_GE);
 		cvCmpS(im, hi,tmp2, CV_CMP_LE);
 		cvCmp(tmp, tmp2, dim, CV_CMP_EQ);
+#if PYR_SEG
 	}
 	else
 	if(pMet)
 	{
 		cvPyrSegmentation(scaled, dim, storage, &comp,
 				                      level, 
-											 (int)thresh1Int/100.0*255, 
-											 (int)thresh2Int/100.0*255); 
+											 (int)(thresh1Int/100.0*255), 
+											 (int)(thresh2Int/100.0*255)); 
 
 	}
+#endif
+
 	cvShowImage( win.c_str(), dim );
 	//cout <<" done";
 	computing = false;
