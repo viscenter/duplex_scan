@@ -17,7 +17,7 @@ using namespace boost::filesystem;
 namespace po = boost::program_options;
 
 //GLOBALS for win controls
-IplImage *dim=0, *im=0, *tmp=0, *tmp2=0, *scaled=0;
+IplImage *dim=0, *im=0, *tmp=0, *tmp2=0, *scaled=0, *imOrig=0, *doc;
 string win("Thresholding Window");
 string lowTrack("lo threshold");
 string highTrack("hi threshold");
@@ -33,7 +33,7 @@ void update(int val);
 
 int main ( int argc, char **argv )
 {
-	string filename, ofilename;
+	string filename, ofilename, dfilename;
 	int bpp;
 	double scaleFactor;
 
@@ -42,6 +42,7 @@ int main ( int argc, char **argv )
 	desc.add_options()
    ("help,h", "help message")
    ("input-file,f", po::value<string>(&filename),"input file")
+   ("document,d", po::value<string>(&dfilename),"original document")
    ("output-file,o", po::value<string>(&ofilename),"output file")
    ("bpp,b", po::value<int>(&bpp)->default_value(16),"bits per pixel for raw")
    ("low-threshold", po::value<double>(&thresh1)->default_value(0.25),"threshold value [0-1]")
@@ -65,6 +66,7 @@ int main ( int argc, char **argv )
 	pMet = (vm.count("pyramid-segmentation") > 0);
 
 	if ( (vm.count("input-file") == 0)
+	 	|| (vm.count("document") == 0)
 		|| thresh1>thresh2 
 		|| thresh1 < 0 
 		|| thresh1 > 1
@@ -72,7 +74,7 @@ int main ( int argc, char **argv )
 		|| thresh2 > 1
 		|| !(tMet^pMet) 
 		|| scaleFactor < 0 
-		|| scaleFactor > 10) 
+		|| scaleFactor > 4) 
 	{
 		 cout << desc << "\n";
 		 return EXIT_FAILURE;
@@ -87,7 +89,6 @@ int main ( int argc, char **argv )
 		highTrack = "Cluster Threshold";
 	}
 	 
-
 
 	//cerr<< "\nreg ";
 	if(0 == (im=getIplImageFromRAW(filename.c_str(), true, bpp)))
@@ -104,9 +105,25 @@ int main ( int argc, char **argv )
 		}
 	}
 
-	if(vm.count("scale-factor"))
+	//cerr<< "\nreg ";
+	if(0 == (doc=getIplImageFromRAW(dfilename.c_str(), true, bpp)))
+	{
+		//cerr<< "\npfm ";
+		if(0 == (doc=getIplImageFromPFM(dfilename.c_str())))
+		{
+			//cerr<< "\nraw ";
+			if(0 == (doc=cvLoadImage(dfilename.c_str(), -1)))
+			{
+				cerr<<"\nFailed to load image file \""<<dfilename<<"\"\n";
+				return EXIT_FAILURE;
+			}
+		}
+	}
+
+	if(scaleFactor != 1.0)
 	{
 		cout<<"\nResizing image by factor of " <<scaleFactor;
+		imOrig = cvCloneImage(im);
 		tmp = cvCreateImage(cvSize(im->width*scaleFactor, im->height*scaleFactor), im->depth, im->nChannels);
 		cvResize(im, tmp, CV_INTER_CUBIC);
 		cvReleaseImage(&im);
@@ -123,7 +140,6 @@ int main ( int argc, char **argv )
 		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 3);
 	*/
 	dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-
 	tmp = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 	tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 
@@ -134,7 +150,11 @@ int main ( int argc, char **argv )
 	{
 		cvNamedWindow( filename.c_str(), 0);
 		cvShowImage( filename.c_str(), im );
-		cvResizeWindow(filename.c_str(), 640, 480);
+		cvResizeWindow(filename.c_str(), 800, 600);
+		cvNamedWindow( dfilename.c_str(), 0);
+		cvShowImage( dfilename.c_str(), doc );
+		cvResizeWindow(dfilename.c_str(), 800, 600);
+
 		cvNamedWindow( win.c_str(), 0);
 		cvResizeWindow(win.c_str(), 1024, 768);
 		cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
@@ -166,6 +186,7 @@ int main ( int argc, char **argv )
 		cvWaitKey();
 		cvDestroyWindow(win.c_str());
 		cvDestroyWindow(filename.c_str());
+		cvDestroyWindow(dfilename.c_str());
 
 
 	}
@@ -174,8 +195,45 @@ int main ( int argc, char **argv )
 		update(0); //get one update in with values
 	}
 
+
 	if(!ofilename.empty())
 	{
+		//revert to the orignal size and threshold and save that.
+		if(scaleFactor != 1.0)
+		{
+			cvReleaseImage(&dim);
+			cvReleaseImage(&tmp);
+			cvReleaseImage(&tmp2);
+			cvReleaseImage(&im);
+
+			im = cvCloneImage(imOrig);
+			dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+			tmp = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+			tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+			cvZero(dim);
+			if(tMet)
+			{
+			cvMinMaxLoc(im, &mi, &mx);
+			range = mx - mi;
+			}
+			else
+			if(pMet)
+			{
+				if(im->depth > 8 )
+				{
+					scaled = cvCreateImage(cvSize(im->width, im->height), 
+									IPL_DEPTH_8U, im->nChannels);
+					cvConvertScaleAbs(im, scaled, 255.0);
+				}
+				else
+				{
+					scaled = cvCloneImage(im);
+				}
+			}
+			update(0);
+			cvReleaseImage(&imOrig);
+		}
+
 		cvSaveImage(ofilename.c_str(), dim);
 	}
 
