@@ -207,6 +207,28 @@ int main ( int argc, char **argv )
 	}
 	else
 	{
+#if PYR_SSEG
+		if(pMet)
+		{
+			storage = cvCreateMemStorage();
+			if(im->depth > 8 )
+			{
+				scaled = cvCreateImage(cvSize(im->width, im->height), 
+								IPL_DEPTH_8U, im->nChannels);
+				scaled->origin = im->origin;
+				cvConvertScaleAbs(im, scaled, 255.0);
+				cout <<"\nScaled to 8bit";
+			}
+			else
+			{
+				scaled = cvCloneImage(im);
+			}
+		}
+#else
+		cvMinMaxLoc(im, &mi, &mx);
+		range = mx - mi;
+#endif
+
 		update(0); //get one update in with values
 	}
 
