@@ -47,7 +47,7 @@ int main ( int argc, char **argv )
    ("low-threshold", po::value<double>(&thresh1)->default_value(0.25),"threshold value [0-1]")
    ("high-threshold", po::value<double>(&thresh2)->default_value(0.5),"threshold value [0-1]")
    ("scale-factor,s", po::value<double>(&scaleFactor)->default_value(1.0),"scale factor use to resize image [0-10]")
-   ("interactive,i", "interactive-segmentation")
+   ("interactive,i", "interactive segmentation")
    ("threshold-segmentation,t", "bi-level thresholding for image segmentation")
    ("pyramid-segmentation,p", "pyramid segmentation");
 
@@ -57,7 +57,7 @@ int main ( int argc, char **argv )
 	
 	if (vm.count("help")) {
 		 cout << desc << "\n";
-		 return 0;
+		 return EXIT_FAILURE;
 	}
 
 	interactive = (vm.count("interactive") > 0);
@@ -75,7 +75,16 @@ int main ( int argc, char **argv )
 		|| scaleFactor > 10) 
 	{
 		 cout << desc << "\n";
-		 return 0;
+		 return EXIT_FAILURE;
+	}
+
+	if(thresh1 == 0.25 && thresh2 == 0.5) //defaults
+		interactive = true;
+
+	if(pMet)
+	{
+		lowTrack = "Link Threshold";
+		highTrack = "Cluster Threshold";
 	}
 	 
 
@@ -119,10 +128,10 @@ int main ( int argc, char **argv )
 	tmp2 = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 
 	cvZero(dim);
+	thresh1Int = (int)(thresh1*100);
+	thresh2Int = (int)(thresh2*100);
 	if(interactive)
 	{
-		thresh1Int = (int)(thresh1*100);
-		thresh2Int = (int)(thresh2*100);
 		cvNamedWindow( filename.c_str(), 0);
 		cvShowImage( filename.c_str(), im );
 		cvResizeWindow(filename.c_str(), 640, 480);
@@ -152,7 +161,6 @@ int main ( int argc, char **argv )
 				scaled = cvCloneImage(im);
 			}
 		}
-
 		update(0);
 		cvShowImage( win.c_str(), dim );
 		cvWaitKey();
@@ -163,7 +171,7 @@ int main ( int argc, char **argv )
 	}
 	else
 	{
-		update(0); //get one update in with the default values
+		update(0); //get one update in with values
 	}
 
 	if(!ofilename.empty())
@@ -188,25 +196,37 @@ int main ( int argc, char **argv )
 
 void update(int val)
 {
-	if(thresh1Int > thresh2Int)
+	static bool computing = false;
+	
+	if(computing )
 	{
-		thresh1Int = thresh2Int;
-		cvSetTrackbarPos(lowTrack.c_str(), win.c_str(), thresh1Int);
+		//cout <<"\nComputing previous";
 		return;
 	}
 	else
-	if(thresh2Int < thresh1Int)
-	{
-		thresh2Int = thresh1Int;
-		cvSetTrackbarPos(highTrack.c_str(), win.c_str(), thresh2Int);
-		return;
-	}
+		computing = true;
 
-	double lo = thresh1Int/100.0*range+mi;
-	double hi = thresh2Int/100.0*range+mi;
-
+	//cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int <<endl;
 	if(tMet)
 	{
+		if(thresh1Int > thresh2Int)
+		{
+			thresh1Int = thresh2Int;
+			cvSetTrackbarPos(lowTrack.c_str(), win.c_str(), thresh1Int);
+		return;
+		}
+		else
+		if(thresh2Int < thresh1Int)
+		{
+			thresh2Int = thresh1Int;
+			cvSetTrackbarPos(highTrack.c_str(), win.c_str(), thresh2Int);
+			return;
+		}
+	
+
+		double lo = thresh1Int/100.0*range+mi;
+		double hi = thresh2Int/100.0*range+mi;
+
 
 		cvCmpS(im, lo,tmp, CV_CMP_GE);
 		cvCmpS(im, hi,tmp2, CV_CMP_LE);
@@ -221,6 +241,7 @@ void update(int val)
 											 (int)thresh2Int/100.0*255); 
 
 	}
-
 	cvShowImage( win.c_str(), dim );
+	//cout <<" done";
+	computing = false;
 }
