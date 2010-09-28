@@ -21,8 +21,11 @@ if [ ! -e "$SEGMENTER" ] ; then
 	exit -1
 fi
 
-echo "Enter a directory to use/copy imaegs to"
-read DIR
+DIR=$1
+if [ "$DIR" == "" ] ; then
+	echo "Enter a directory to use/copy images to"
+	read DIR
+fi
 
 if [[ -e "$DIR/backlight.raw"  &&  -e "$DIR/backlitDoc.raw"  &&  -e "$DIR/doc.raw" ]]; then
 	echo "Overwrite images(y/n)?"
@@ -41,6 +44,7 @@ if [ "$?" != "0" ]; then
 	exit -1
 fi
 
+echo "$DUPLEXER -b $DIR/backlight.raw -d $DIR/backlitDoc.raw  -n $DIR/doc.raw -v -s"
 $DUPLEXER -b $DIR/backlight.raw -d $DIR/backlitDoc.raw  -n $DIR/doc.raw -v -s
 if [ "$?" != "0" ]; then
 	echo "Failed to compute duplex scan stats from image files in \"$DIR\""

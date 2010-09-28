@@ -33,7 +33,7 @@ echo "Hit Enter to continue"
 read IN
 
 echo "Grabbing backlit document image .. \"$DIR/backlitDoc.raw\"" 
-echo "Place the backlight behind the document with and switch it on"
+echo "Place the backlight behind the document and switch it on"
 echo "Hit Enter to capture image"
 read IN
 $EXE -o $DIR/backlitDoc -e raw 

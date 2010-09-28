@@ -47,7 +47,7 @@ int main ( int argc, char **argv )
 		 return EXIT_FAILURE;
 	}
 
-	if (!vm.count("back")||!vm.count("fore")||!vm.count("doc")) {
+	if (!vm.count("backlight-only")||!vm.count("doc-backlit")||!vm.count("doc-no-backlight")) {
 		 cout << desc << "\n";
 		 return EXIT_FAILURE;
 	}
