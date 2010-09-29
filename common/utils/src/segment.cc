@@ -50,7 +50,7 @@ int main ( int argc, char **argv )
    ("help,h", "help message")
    ("input-file,f", po::value<string>(&filename),"input file")
    ("document,d", po::value<string>(&dfilename),"original document")
-   ("output-file,o", po::value<string>(&ofilename),"output file")
+   ("output-file,o", po::value<string>(&ofilename),"output mask file")
    ("bpp,b", po::value<int>(&bpp)->default_value(16),"bits per pixel for raw")
    ("low-threshold", po::value<double>(&thresh1)->default_value(0.25),"threshold value [0-1]")
    ("high-threshold", po::value<double>(&thresh2)->default_value(0.5),"threshold value [0-1]")
@@ -290,18 +290,43 @@ int main ( int argc, char **argv )
 		cvReleaseImage(&imOrig);
 	}
 
-	//
-	cvErode(dim, tmp, 0, 1);
-	cvDilate(tmp, tmp2, 0, 2);
-	dim = cvCloneImage(tmp2);
+	//Morphological hackery
+
+	IplConvKernel* k = cvCreateStructuringElementEx(3, 3, 1, 1, CV_SHAPE_RECT);
+	cvCopy(dim, tmp);
+	cvCopy(dim, tmp2);
+	IplImage * orig = cvCloneImage(dim);
+	/*
+	cvSaveImage("mop__nop.png",dim);
+	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_CLOSE);
+	cvSaveImage("mop_close.png",tmp);
+	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_GRADIENT);
+	cvSaveImage("mop_gradient.png",tmp);
+	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_TOPHAT);
+	cvSaveImage("mop_topHat.png",tmp);
+	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_BLACKHAT);
+	cvSaveImage("mop_bottomHat.png", tmp);
+	*/
+
+	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_OPEN, 1);
+	cvSaveImage("mop_open.png", tmp);
+
+	cvMorphologyEx(tmp, tmp2, 0,  k, CV_MOP_CLOSE, 2);
+	cvSaveImage("mop_close2.png", tmp2);
+	cvMorphologyEx(tmp2, tmp, 0,  k, CV_MOP_OPEN, 1);
+	cvSaveImage("mop_close2open.png", tmp);
+	cvMorphologyEx(tmp, tmp2, 0,  k, CV_MOP_CLOSE, 2);
+	cvSaveImage("mop_close2openclose2.png", tmp2);
 
 
-
-
+	cvAnd(dim, tmp2, tmp);
+	cvSaveImage("mop_openANDnop.png", tmp);
+	cvCopy(orig, dim);
+	cvReleaseImage(&orig);
 
 	if(!ofilename.empty())
 	{
-		cvSaveImage(ofilename.c_str(), dim);
+			cvSaveImage(ofilename.c_str(), sImage);
 	}
 #if PYR_SEG
 	if(pMet)
