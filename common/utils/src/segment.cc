@@ -326,7 +326,7 @@ int main ( int argc, char **argv )
 
 	if(!ofilename.empty())
 	{
-			cvSaveImage(ofilename.c_str(), sImage);
+			cvSaveImage(ofilename.c_str(), dim);
 	}
 #if PYR_SEG
 	if(pMet)
