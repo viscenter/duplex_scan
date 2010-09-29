@@ -50,12 +50,20 @@ int main(int argc, char** argv)
 
 	result = cvCloneImage(doc);
 	cvZero(result);
-	result = cvCloneImage(doc);
+	cvCopy(doc, result, mask);
+	cvFlip(result, 0, 0);
+
+	tmp = cvCloneImage(doc);
 
 	if(result->depth > 8 )
 	{
 		writePFM(result, (string(argv[3])+".pfm").c_str());
-
+		IplImage *scaled = cvCreateImage(cvSize(doc->width, doc->height), IPL_DEPTH_8U, doc->nChannels);
+		scaled->origin = doc->origin;
+		cvConvertScaleAbs(result, scaled, 255.0);
+		cvSaveImage("resultDisplay.png", scaled);
+		cvConvertScaleAbs(doc, scaled, 255.0);
+		cvSaveImage("docDisplay.png", scaled);
 	}
 	else
 		cvSaveImage(argv[3], result);
