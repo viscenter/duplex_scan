@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <map>
 #include <boost/filesystem.hpp> 
 #include <boost/program_options.hpp> 
 
@@ -31,14 +32,17 @@ bool tMet, pMet;
 CvSeq *comp;
 CvMemStorage *storage;
 int level = 4;
+CvRect ROI;
+
 
 void update(int val);
+void onMouse(int event, int x, int y, int flags,  void *param);
 
 int main ( int argc, char **argv )
 {
 	string filename, ofilename, dfilename;
 	int bpp;
-	double scaleFactor;
+	double scaleFactor=1.0;
 
 
 	po::options_description desc("Allowed options");
@@ -50,7 +54,7 @@ int main ( int argc, char **argv )
    ("bpp,b", po::value<int>(&bpp)->default_value(16),"bits per pixel for raw")
    ("low-threshold", po::value<double>(&thresh1)->default_value(0.25),"threshold value [0-1]")
    ("high-threshold", po::value<double>(&thresh2)->default_value(0.5),"threshold value [0-1]")
-   ("scale-factor,s", po::value<double>(&scaleFactor)->default_value(1.0),"scale factor use to resize image [0-10]")
+   //("scale-factor,s", po::value<double>(&scaleFactor)->default_value(1.0),"scale factor use to resize image [0-10]") /* not the same when you rescale back out*/
    ("interactive,i", "interactive segmentation")
 #if PYR_SEG
    ("threshold-segmentation,t", "bi-level thresholding for image segmentation")
@@ -133,6 +137,10 @@ int main ( int argc, char **argv )
 		}
 	}
 
+	ROI.x = 0; ROI.y=0; ROI.width = doc->width; ROI.height = doc->height;
+	map<string, IplImage*> winNames;
+	
+
 	if(scaleFactor != 1.0)
 	{
 		cout<<"\nResizing image by factor of " <<scaleFactor;
@@ -148,10 +156,10 @@ int main ( int argc, char **argv )
 	cout  << IplImageToString(im) <<endl;
 	dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 	dim->origin = im->origin;
+	cvZero(dim);
 	tmp = cvCloneImage(dim);
 	tmp2 = cvCloneImage(dim);
 
-	cvZero(dim);
 	thresh1Int = (int)(thresh1*100);
 	thresh2Int = (int)(thresh2*100);
 	if(interactive)
@@ -162,6 +170,11 @@ int main ( int argc, char **argv )
 		cvNamedWindow( dfilename.c_str(), 0);
 		cvShowImage( dfilename.c_str(), doc );
 		cvResizeWindow(dfilename.c_str(), 800, 600);
+		winNames[filename] = im;
+		winNames[dfilename] = doc;
+		//cvSetMouseCallback(filename.c_str(), onMouse, &winNames);
+		//cvSetMouseCallback(dfilename.c_str(), onMouse, &winNames);
+
 
 		cvNamedWindow( win.c_str(), 0);
 		cvResizeWindow(win.c_str(), 1024, 768);
@@ -233,52 +246,61 @@ int main ( int argc, char **argv )
 	}
 
 
-	if(!ofilename.empty())
+	//revert to the orignal size and threshold and save that.
+	if(scaleFactor != 1.0)
 	{
-		//revert to the orignal size and threshold and save that.
-		if(scaleFactor != 1.0)
-		{
-			cvReleaseImage(&dim);
-			cvReleaseImage(&tmp);
-			cvReleaseImage(&tmp2);
-			cvReleaseImage(&im);
+		cvReleaseImage(&dim);
+		cvReleaseImage(&tmp);
+		cvReleaseImage(&tmp2);
+		cvReleaseImage(&im);
 
-			im = cvCloneImage(imOrig);
-			dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-			dim->origin = im->origin;
-			tmp = cvCloneImage(dim);
-			tmp2 = cvCloneImage(dim);
-			cvZero(dim);
+		im = cvCloneImage(imOrig);
+		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
+		dim->origin = im->origin;
+		cvZero(dim);
+		tmp = cvCloneImage(dim);
+		tmp2 = cvCloneImage(dim);
 #if PYR_SEG
-			if(tMet)
+		if(tMet)
+		{
+			//cvMinMaxLoc(im, &mi, &mx);
+			//range = mx - mi;
+		}
+		else
+		if(pMet)
+		{
+			if(im->depth > 8 )
 			{
-				cvMinMaxLoc(im, &mi, &mx);
-				range = mx - mi;
+				scaled = cvCreateImage(cvSize(im->width, im->height), 
+								IPL_DEPTH_8U, im->nChannels);
+				scaled->origin = im->origin;
+				cvConvertScaleAbs(im, scaled, 255.0);
 			}
 			else
-			if(pMet)
 			{
-				if(im->depth > 8 )
-				{
-					scaled = cvCreateImage(cvSize(im->width, im->height), 
-									IPL_DEPTH_8U, im->nChannels);
-					scaled->origin = im->origin;
-					cvConvertScaleAbs(im, scaled, 255.0);
-				}
-				else
-				{
-					scaled = cvCloneImage(im);
-				}
+				scaled = cvCloneImage(im);
 			}
+		}
 #else
-			cvMinMaxLoc(im, &mi, &mx);
-			range = mx - mi;
+		cvMinMaxLoc(im, &mi, &mx);
+		range = mx - mi;
 #endif
 
-			update(0);
-			cvReleaseImage(&imOrig);
-		}
+		update(0);
+		cvReleaseImage(&imOrig);
+	}
 
+	//
+	cvErode(dim, tmp, 0, 1);
+	cvDilate(tmp, tmp2, 0, 2);
+	dim = cvCloneImage(tmp2);
+
+
+
+
+
+	if(!ofilename.empty())
+	{
 		cvSaveImage(ofilename.c_str(), dim);
 	}
 #if PYR_SEG
@@ -310,7 +332,6 @@ void update(int val)
 	else
 		computing = true;
 
-	cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int <<endl;
 #if PYR_SEG
 	if(tMet)
 	{
@@ -334,6 +355,8 @@ void update(int val)
 		double hi = thresh2Int/100.0*range+mi;
 
 
+		cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int
+				<< ".."<<lo <<":"<<hi <<"("<<range<<":"<<mi<<")"<<endl;
 		cvCmpS(im, lo,tmp, CV_CMP_GE);
 		cvCmpS(im, hi,tmp2, CV_CMP_LE);
 		cvCmp(tmp, tmp2, dim, CV_CMP_EQ);
@@ -342,6 +365,7 @@ void update(int val)
 	else
 	if(pMet)
 	{
+	cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int <<endl;
 		cvPyrSegmentation(scaled, dim, storage, &comp,
 				                      level, 
 											 (int)(thresh1Int/100.0*255), 
@@ -353,4 +377,50 @@ void update(int val)
 	cvShowImage( win.c_str(), dim );
 	//cout <<" done";
 	computing = false;
+}
+
+void onMouse(int event, int x, int y, int flags,  void *param)
+{
+	static bool drag = false;
+	static int sX, sY, eX, eY;
+	map<string,IplImage*> *winNames = reinterpret_cast< map<string,IplImage*>* >(param); 
+	if(!winNames)
+	{
+		cerr<<"\nfailed to get window names";
+		return;
+	}
+
+	if(event == CV_EVENT_LBUTTONDOWN)
+	{
+		drag = true;
+		sX = x; sY = y;
+	}
+
+	if(event == CV_EVENT_LBUTTONUP)
+	{
+		drag = false;
+		eX = x; eY = y;
+	}
+
+	if(event == CV_EVENT_MOUSEMOVE)
+	{
+		//cout << x <<":"<<y<<endl;
+	}
+
+
+
+	if(drag)
+	{
+		ROI.x = sX < eX ? sX:eX;
+		ROI.y = sY < eY ? sY:eY;
+
+		ROI.width = abs(sX - eX);
+		ROI.height = abs(sY - eY);
+		for(map<string, IplImage*>::iterator i=winNames->begin(); 
+			 i != winNames->end() ; ++i)
+		{
+			cvRectangle(i->second, cvPoint(ROI.x, ROI.y), cvPoint(ROI.x+ROI.width, ROI.y+ROI.height), CV_RGB(255, 0, 0), 2);
+		}
+	}
+
 }
