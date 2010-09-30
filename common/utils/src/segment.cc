@@ -33,6 +33,7 @@ CvSeq *comp;
 CvMemStorage *storage;
 int level = 4;
 CvRect ROI;
+bool roiChanged = true;
 
 
 void update(int val);
@@ -138,7 +139,8 @@ int main ( int argc, char **argv )
 	}
 
 	ROI.x = 0; ROI.y=0; ROI.width = doc->width; ROI.height = doc->height;
-	map<string, IplImage*> winNames;
+	roiChanged = true;
+	map<string, pair<IplImage*, IplImage*> > winNames;
 	
 
 	if(scaleFactor != 1.0)
@@ -170,10 +172,10 @@ int main ( int argc, char **argv )
 		cvNamedWindow( dfilename.c_str(), 0);
 		cvShowImage( dfilename.c_str(), doc );
 		cvResizeWindow(dfilename.c_str(), 800, 600);
-		winNames[filename] = im;
-		winNames[dfilename] = doc;
-		//cvSetMouseCallback(filename.c_str(), onMouse, &winNames);
-		//cvSetMouseCallback(dfilename.c_str(), onMouse, &winNames);
+		winNames[filename] = make_pair(im, cvCloneImage(im));
+		winNames[dfilename] = make_pair(doc, cvCloneImage(doc));
+		cvSetMouseCallback(filename.c_str(), onMouse, &winNames);
+		cvSetMouseCallback(dfilename.c_str(), onMouse, &winNames);
 
 
 		cvNamedWindow( win.c_str(), 0);
@@ -357,6 +359,15 @@ void update(int val)
 	else
 		computing = true;
 
+	if(roiChanged)
+	{
+		cvSetImageROI(im, ROI);
+		cvSetImageROI(tmp, ROI);
+		cvSetImageROI(tmp2, ROI);
+		cvSetImageROI(dim, ROI);
+		roiChanged = false;
+	}
+
 #if PYR_SEG
 	if(tMet)
 	{
@@ -408,7 +419,7 @@ void onMouse(int event, int x, int y, int flags,  void *param)
 {
 	static bool drag = false;
 	static int sX, sY, eX, eY;
-	map<string,IplImage*> *winNames = reinterpret_cast< map<string,IplImage*>* >(param); 
+	map<string,pair< IplImage*, IplImage*> >*winNames = reinterpret_cast< map<string,pair<IplImage*,IplImage*> >* >(param); 
 	if(!winNames)
 	{
 		cerr<<"\nfailed to get window names";
@@ -418,33 +429,50 @@ void onMouse(int event, int x, int y, int flags,  void *param)
 	if(event == CV_EVENT_LBUTTONDOWN)
 	{
 		drag = true;
-		sX = x; sY = y;
+		sX = x ; sY = y ;
+		cout <<"LB_DOWN "<<sX <<":"<<sY<<endl;
 	}
 
 	if(event == CV_EVENT_LBUTTONUP)
 	{
 		drag = false;
 		eX = x; eY = y;
+		cout <<"LB_UP "<<eX <<":"<<eY<<endl;
 	}
 
 	if(event == CV_EVENT_MOUSEMOVE)
 	{
 		//cout << x <<":"<<y<<endl;
+		if(drag)
+		{
+			eX = x; eY = y;
+			ROI.x = sX < eX ? sX:eX;
+			ROI.y = sY < eY ? sY:eY;
+			ROI.width = abs(sX - eX);
+			ROI.height = abs(sY - eY);
+			sX = ROI.x; sY = ROI.y;
+			eX = ROI.x+ROI.width; eY = ROI.y+ROI.height;
+
+			cout << ROI.x <<"," <<ROI.y <<" "<<ROI.width<<"*"<<ROI.height<<endl;
+			roiChanged = true;
+		}
+		else
+			return;
+
 	}
 
 
 
-	if(drag)
+	if(!drag)
 	{
-		ROI.x = sX < eX ? sX:eX;
-		ROI.y = sY < eY ? sY:eY;
-
-		ROI.width = abs(sX - eX);
-		ROI.height = abs(sY - eY);
-		for(map<string, IplImage*>::iterator i=winNames->begin(); 
+		for(map<string, pair<IplImage*, IplImage*> >::iterator i=winNames->begin(); 
 			 i != winNames->end() ; ++i)
 		{
-			cvRectangle(i->second, cvPoint(ROI.x, ROI.y), cvPoint(ROI.x+ROI.width, ROI.y+ROI.height), CV_RGB(255, 0, 0), 2);
+			int yF = i->second.first->origin == 0? ROI.y: i->second.first->height - y;
+			cvResetImageROI(i->second.first);
+			cvCopy(i->second.first, i->second.second);
+			cvRectangle(i->second.second, cvPoint(ROI.x,yF), cvPoint(ROI.x+ROI.width, yF+ROI.height), CV_RGB(255, 0, 0), 8);
+			cvShowImage(i->first.c_str(), i->second.second);
 		}
 	}
 
