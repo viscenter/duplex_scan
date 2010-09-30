@@ -43,7 +43,6 @@ int main ( int argc, char **argv )
 {
 	string filename, ofilename, dfilename;
 	int bpp;
-	double scaleFactor=1.0;
 
 
 	po::options_description desc("Allowed options");
@@ -55,7 +54,6 @@ int main ( int argc, char **argv )
    ("bpp,b", po::value<int>(&bpp)->default_value(16),"bits per pixel for raw")
    ("low-threshold", po::value<double>(&thresh1)->default_value(0.25),"threshold value [0-1]")
    ("high-threshold", po::value<double>(&thresh2)->default_value(0.5),"threshold value [0-1]")
-   //("scale-factor,s", po::value<double>(&scaleFactor)->default_value(1.0),"scale factor use to resize image [0-10]") /* not the same when you rescale back out*/
    ("interactive,i", "interactive segmentation")
 #if PYR_SEG
    ("threshold-segmentation,t", "bi-level thresholding for image segmentation")
@@ -90,8 +88,7 @@ int main ( int argc, char **argv )
 #if PYR_SEG
 		|| !(tMet^pMet) 
 #endif
-		|| scaleFactor < 0 
-		|| scaleFactor > 4) 
+		)
 	{
 		 cout << desc << "\n";
 		 return EXIT_FAILURE;
@@ -143,18 +140,6 @@ int main ( int argc, char **argv )
 	map<string, pair<IplImage*, IplImage*> > winNames;
 	
 
-	if(scaleFactor != 1.0)
-	{
-		cout<<"\nResizing image by factor of " <<scaleFactor;
-		imOrig = cvCloneImage(im);
-		tmp = cvCreateImage(cvSize(im->width*scaleFactor, im->height*scaleFactor), im->depth, im->nChannels);
-		tmp->origin = im->origin;
-		cvResize(im, tmp, CV_INTER_CUBIC);
-		cvReleaseImage(&im);
-		im = cvCloneImage(tmp);
-		cvReleaseImage(&tmp);
-	}
-
 	cout  << IplImageToString(im) <<endl;
 	dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
 	dim->origin = im->origin;
@@ -174,6 +159,7 @@ int main ( int argc, char **argv )
 		cvResizeWindow(dfilename.c_str(), 800, 600);
 		winNames[filename] = make_pair(im, cvCloneImage(im));
 		winNames[dfilename] = make_pair(doc, cvCloneImage(doc));
+		winNames[win] = make_pair(dim, cvCloneImage(dim));
 		cvSetMouseCallback(filename.c_str(), onMouse, &winNames);
 		cvSetMouseCallback(dfilename.c_str(), onMouse, &winNames);
 
@@ -248,49 +234,6 @@ int main ( int argc, char **argv )
 	}
 
 
-	//revert to the orignal size and threshold and save that.
-	if(scaleFactor != 1.0)
-	{
-		cvReleaseImage(&dim);
-		cvReleaseImage(&tmp);
-		cvReleaseImage(&tmp2);
-		cvReleaseImage(&im);
-
-		im = cvCloneImage(imOrig);
-		dim = cvCreateImage(cvSize(im->width, im->height), IPL_DEPTH_8U, 1);
-		dim->origin = im->origin;
-		cvZero(dim);
-		tmp = cvCloneImage(dim);
-		tmp2 = cvCloneImage(dim);
-#if PYR_SEG
-		if(tMet)
-		{
-			//cvMinMaxLoc(im, &mi, &mx);
-			//range = mx - mi;
-		}
-		else
-		if(pMet)
-		{
-			if(im->depth > 8 )
-			{
-				scaled = cvCreateImage(cvSize(im->width, im->height), 
-								IPL_DEPTH_8U, im->nChannels);
-				scaled->origin = im->origin;
-				cvConvertScaleAbs(im, scaled, 255.0);
-			}
-			else
-			{
-				scaled = cvCloneImage(im);
-			}
-		}
-#else
-		cvMinMaxLoc(im, &mi, &mx);
-		range = mx - mi;
-#endif
-
-		update(0);
-		cvReleaseImage(&imOrig);
-	}
 
 	//Morphological hackery
 
@@ -328,7 +271,12 @@ int main ( int argc, char **argv )
 
 	if(!ofilename.empty())
 	{
-			cvSaveImage(ofilename.c_str(), dim);
+		cvResetImageROI(im);
+		cvResetImageROI(dim);
+		cvResetImageROI(tmp);
+		cvResetImageROI(tmp2);
+		update(0);
+		cvSaveImage(ofilename.c_str(), dim);
 	}
 #if PYR_SEG
 	if(pMet)
@@ -361,10 +309,11 @@ void update(int val)
 
 	if(roiChanged)
 	{
-		cvSetImageROI(im, ROI);
-		cvSetImageROI(tmp, ROI);
-		cvSetImageROI(tmp2, ROI);
-		cvSetImageROI(dim, ROI);
+			cvSetImageROI(im, ROI);
+			cvSetImageROI(tmp, ROI);
+			cvSetImageROI(tmp2, ROI);
+			cvSetImageROI(dim, ROI);
+
 		roiChanged = false;
 	}
 
@@ -391,8 +340,7 @@ void update(int val)
 		double hi = thresh2Int/100.0*range+mi;
 
 
-		cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int
-				<< ".."<<lo <<":"<<hi <<"("<<range<<":"<<mi<<")"<<endl;
+	//	cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int << ".."<<lo <<":"<<hi <<"("<<range<<":"<<mi<<")"<<endl;
 		cvCmpS(im, lo,tmp, CV_CMP_GE);
 		cvCmpS(im, hi,tmp2, CV_CMP_LE);
 		cvCmp(tmp, tmp2, dim, CV_CMP_EQ);
@@ -401,7 +349,7 @@ void update(int val)
 	else
 	if(pMet)
 	{
-	cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int <<endl;
+	//cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int <<endl;
 		cvPyrSegmentation(scaled, dim, storage, &comp,
 				                      level, 
 											 (int)(thresh1Int/100.0*255), 
@@ -430,35 +378,44 @@ void onMouse(int event, int x, int y, int flags,  void *param)
 	{
 		drag = true;
 		sX = x ; sY = y ;
-		cout <<"LB_DOWN "<<sX <<":"<<sY<<endl;
+		//cout <<"Start "<<sX <<":"<<sY<<endl;
 	}
 
 	if(event == CV_EVENT_LBUTTONUP)
 	{
 		drag = false;
 		eX = x; eY = y;
-		cout <<"LB_UP "<<eX <<":"<<eY<<endl;
+		//cout <<"End "<<eX <<":"<<eY<<endl;
+		//cout << ROI.x <<"," <<ROI.y <<" "<<ROI.width<<"*"<<ROI.height<<endl;
 	}
 
 	if(event == CV_EVENT_MOUSEMOVE)
 	{
-		//cout << x <<":"<<y<<endl;
 		if(drag)
 		{
 			eX = x; eY = y;
 			ROI.x = sX < eX ? sX:eX;
 			ROI.y = sY < eY ? sY:eY;
-			ROI.width = abs(sX - eX);
-			ROI.height = abs(sY - eY);
-			sX = ROI.x; sY = ROI.y;
-			eX = ROI.x+ROI.width; eY = ROI.y+ROI.height;
+			ROI.width = sX < eX ? eX-sX: sX-eX;
+			ROI.height = sY < eY ? eY-sY: sY-eY;
+			if(im->origin != 0)
+			{
+				ROI.y = im->height - ROI.y;
+			}
 
-			cout << ROI.x <<"," <<ROI.y <<" "<<ROI.width<<"*"<<ROI.height<<endl;
+
 			roiChanged = true;
 		}
 		else
 			return;
 
+	}
+
+	if(event == CV_EVENT_RBUTTONUP)
+	{
+		cout <<"Resetting ROI"<<endl;
+		ROI.x = 0; ROI.y =0; ROI.width = im->width; ROI.height = im->height;
+		roiChanged = true;
 	}
 
 
@@ -468,10 +425,9 @@ void onMouse(int event, int x, int y, int flags,  void *param)
 		for(map<string, pair<IplImage*, IplImage*> >::iterator i=winNames->begin(); 
 			 i != winNames->end() ; ++i)
 		{
-			int yF = i->second.first->origin == 0? ROI.y: i->second.first->height - y;
 			cvResetImageROI(i->second.first);
 			cvCopy(i->second.first, i->second.second);
-			cvRectangle(i->second.second, cvPoint(ROI.x,yF), cvPoint(ROI.x+ROI.width, yF+ROI.height), CV_RGB(255, 0, 0), 8);
+				cvRectangle(i->second.second, cvPoint(ROI.x,ROI.y), cvPoint(ROI.x+ROI.width, ROI.y+ROI.height), CV_RGB(255, 0, 0), 8);
 			cvShowImage(i->first.c_str(), i->second.second);
 		}
 	}
