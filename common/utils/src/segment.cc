@@ -34,6 +34,7 @@ CvMemStorage *storage;
 int level = 4;
 CvRect ROI;
 bool roiChanged = true;
+	int tScale;
 
 
 void update(int val);
@@ -54,6 +55,7 @@ int main ( int argc, char **argv )
    ("bpp,b", po::value<int>(&bpp)->default_value(16),"bits per pixel for raw")
    ("low-threshold", po::value<double>(&thresh1)->default_value(0.25),"threshold value [0-1]")
    ("high-threshold", po::value<double>(&thresh2)->default_value(0.5),"threshold value [0-1]")
+   ("threshold-resolution,r", po::value<int>(&tScale)->default_value(100),"threshold resolution. Greater the number, smaller the change 100==1% 200==0.5% [0-500]")
    ("interactive,i", "interactive segmentation")
 #if PYR_SEG
    ("threshold-segmentation,t", "bi-level thresholding for image segmentation")
@@ -85,6 +87,8 @@ int main ( int argc, char **argv )
 		|| thresh1 > 1
 		|| thresh2 < 0 
 		|| thresh2 > 1
+		|| tScale < 1 
+		|| tScale > 500 
 #if PYR_SEG
 		|| !(tMet^pMet) 
 #endif
@@ -147,8 +151,8 @@ int main ( int argc, char **argv )
 	tmp = cvCloneImage(dim);
 	tmp2 = cvCloneImage(dim);
 
-	thresh1Int = (int)(thresh1*100);
-	thresh2Int = (int)(thresh2*100);
+	thresh1Int = (int)(thresh1*tScale);
+	thresh2Int = (int)(thresh2*tScale);
 	if(interactive)
 	{
 		cvNamedWindow( filename.c_str(), 0);
@@ -166,8 +170,8 @@ int main ( int argc, char **argv )
 
 		cvNamedWindow( win.c_str(), 0);
 		cvResizeWindow(win.c_str(), 1024, 768);
-		cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, 100, update);
-		cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, 100, update);
+		cvCreateTrackbar(lowTrack.c_str(), win.c_str(), &thresh1Int, tScale, update);
+		cvCreateTrackbar(highTrack.c_str(), win.c_str(), &thresh2Int, tScale, update);
 #if PYR_SEG
 		if(tMet)
 		{
@@ -336,8 +340,8 @@ void update(int val)
 		}
 	
 
-		double lo = thresh1Int/100.0*range+mi;
-		double hi = thresh2Int/100.0*range+mi;
+		double lo = thresh1Int/((double)tScale)*range+mi;
+		double hi = thresh2Int/((double)tScale)*range+mi;
 
 
 	//	cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int << ".."<<lo <<":"<<hi <<"("<<range<<":"<<mi<<")"<<endl;
@@ -352,8 +356,8 @@ void update(int val)
 	//cout <<"Updating .."<<thresh1Int <<":"<<thresh2Int <<endl;
 		cvPyrSegmentation(scaled, dim, storage, &comp,
 				                      level, 
-											 (int)(thresh1Int/100.0*255), 
-											 (int)(thresh2Int/100.0*255)); 
+											 (int)(thresh1Int/((double)tScale)*255), 
+											 (int)(thresh2Int/((double)tScale)*255)); 
 
 	}
 #endif
