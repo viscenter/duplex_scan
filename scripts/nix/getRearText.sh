@@ -3,6 +3,7 @@
 GRABBER="scripts/grabImages.sh"
 DUPLEXER="common/utils/duplexScanStats"
 SEGMENTER="common/utils/segment"
+BACKTEXTER="common/utils/backText"
 
 echo "Generating images for rear text retreval"
 
@@ -18,6 +19,11 @@ fi
 
 if [ ! -e "$SEGMENTER" ] ; then
 	"Can't find segementation executable \"$SEGMENTER\""
+	exit -1
+fi
+
+if [ ! -e "$BACKTEXTER" ] ; then
+	"Can't find backText executable \"$BACKTEXTER\""
 	exit -1
 fi
 
@@ -44,7 +50,6 @@ if [ "$?" != "0" ]; then
 	exit -1
 fi
 
-echo "$DUPLEXER -b $DIR/backlight.raw -d $DIR/backlitDoc.raw  -n $DIR/doc.raw -v -s"
 $DUPLEXER -b $DIR/backlight.raw -d $DIR/backlitDoc.raw  -n $DIR/doc.raw -v -s
 if [ "$?" != "0" ]; then
 	echo "Failed to compute duplex scan stats from image files in \"$DIR\""
@@ -56,5 +61,16 @@ if [ "$?" != "0" ]; then
 	exit -1
 fi
 
-echo "Run segmentation on executable to manually find out what thresholds to use "
-echo " done"
+$SEGMENTER -f variance.pfm  -d $DIR/backlitDoc.raw -o threshold.png 
+
+if [ "$?" != "0" ]; then
+	echo "Failed to run segmentation code"
+	exit -1
+fi
+
+$BACKTEXTER $DIR/backlitDoc.raw threshold.png extractedBackText.png
+
+if [ "$?" != "0" ]; then
+	echo "Failed to extract back text"
+	exit -1
+fi
