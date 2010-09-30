@@ -114,22 +114,34 @@
 	</p>
 
   @subsection stat_seg Segmentation 
-  This process will use the images from the previous step to allow the user to specify thresholds using different thresholding methods to cleanly extract the back text and produce the final result
+  This process will use the images from the previous step to allow the user to specify thresholds using different thresholding methods to cleanly extract the back text producing a mask to be used with the original document to specify the back text
   <code>
-	<br />
-	<br />common/utils/segment -h
-	<br />Allowed options:
-   <br />-h [ --help ]                    help message
-   <br />-f [ --input-file ] arg          input file
-   <br />-o [ --output-file ] arg         output file
-   <br />-b [ --bpp ] arg (=16)           bits per pixel for raw
-   <br />--low-threshold arg (=0.25)      threshold value [0-1]
-   <br />--high-threshold arg (=0.5)      threshold value [0-1]
-   <br />-s [ --scale-factor ] arg (=1)   scale factor use to resize image [0-10]
-   <br />-i [ --interactive ]             interactive-segmentation
-   <br />-t [ --threshold-segmentation ]  bi-level thresholding for image segmentation
-   <br />-p [ --pyramid-segmentation ]    pyramid segmentation
+  <br />common/utils/segment -h
+  <br />Allowed options:
+  <br />-h [ --help ]                            help message
+  <br />-f [ --input-file ] arg                  input file
+  <br />-d [ --document ] arg                    original document
+  <br />-o [ --output-file ] arg                 output mask file
+  <br />-b [ --bpp ] arg (=16)                   bits per pixel for raw
+  <br />--low-threshold arg (=0.25)              threshold value [0-1]
+  <br />--high-threshold arg (=0.5)              threshold value [0-1]
+  <br />-r [ --threshold-resolution ] arg (=100) threshold resolution. Greater the 
+                                           number, smaller the change 100==1% 
+                                           200==0.5% [0-500]
+  <br />-i [ --interactive ]                     interactive segmentation
+  <br />-t [ --threshold-segmentation ]          bi-level thresholding for image 
+                                           segmentation
   </code>
+  @subsection stat_seg Back text extraction 
+  This process apply the mask that was generated from the previous code specifying the parts of the document that are back text only. The mask(grey level image) can be hand tweaked to get better results)
+  <code>
+  <br />common/utils/backText
+  <br />backText [document] [mask] [outputfile]
+  <br /> [document]    backlit document 
+  <br /> [mask]        mask file 
+  <br /> [outputfile]  output file 
+  </code>
+	
 */
 
 
