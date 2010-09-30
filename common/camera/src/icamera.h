@@ -132,7 +132,7 @@
   <br />-t [ --threshold-segmentation ]          bi-level thresholding for image 
                                            segmentation
   </code>
-  @subsection stat_seg Back text extraction 
+  @subsection stat_backText Back text extraction 
   This process apply the mask that was generated from the previous code specifying the parts of the document that are back text only. The mask(grey level image) can be hand tweaked to get better results)
   <code>
   <br />common/utils/backText
