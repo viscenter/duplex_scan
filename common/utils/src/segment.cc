@@ -241,21 +241,12 @@ int main ( int argc, char **argv )
 
 	//Morphological hackery
 
+
+	/*
 	IplConvKernel* k = cvCreateStructuringElementEx(3, 3, 1, 1, CV_SHAPE_RECT);
 	cvCopy(dim, tmp);
 	cvCopy(dim, tmp2);
 	IplImage * orig = cvCloneImage(dim);
-	/*
-	cvSaveImage("mop__nop.png",dim);
-	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_CLOSE);
-	cvSaveImage("mop_close.png",tmp);
-	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_GRADIENT);
-	cvSaveImage("mop_gradient.png",tmp);
-	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_TOPHAT);
-	cvSaveImage("mop_topHat.png",tmp);
-	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_BLACKHAT);
-	cvSaveImage("mop_bottomHat.png", tmp);
-	*/
 
 	cvMorphologyEx(dim, tmp, tmp2, k, CV_MOP_OPEN, 1);
 	cvSaveImage("mop_open.png", tmp);
@@ -272,7 +263,7 @@ int main ( int argc, char **argv )
 	cvSaveImage("mop_openANDnop.png", tmp);
 	cvCopy(orig, dim);
 	cvReleaseImage(&orig);
-
+	*/
 	if(!ofilename.empty())
 	{
 		cvResetImageROI(im);

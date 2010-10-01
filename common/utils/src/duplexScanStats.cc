@@ -141,9 +141,9 @@ int main ( int argc, char **argv )
 		}
 		/********/
 
-		if(!writePFM(diffIm, "backText.pfm") || 
+		if(!writePFM(diffIm, "backTextEnhanced.pfm") || 
 			!writePFM(variance, "variance.pfm") ||
-			!writePFM(diffImAbs, "backTextAbs.pfm") || 
+			!writePFM(diffImAbs, "backTextAbsEnhanced.pfm") || 
 			!writePFM(varianceAbs, "varianceAbs.pfm") )
 		{
 			cerr<<"\nFailed to saw backText images";
