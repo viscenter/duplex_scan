@@ -42,6 +42,7 @@ if [ "$?" != "0" ]; then
 	exit -1
 fi
 echo "done"
+echo ""
 
 echo "Grabbing document image without backlight .. \"$DIR/doc.raw\"" 
 echo "Switch the backlight off"
@@ -53,6 +54,7 @@ if [ "$?" != "0" ]; then
 	exit -1
 fi
 echo "done"
+echo ""
 
 echo "Grabbing image of the backlight only .. \"$DIR/backlight.raw\"" 
 echo "Carefully remove the backlight from behind the document"
