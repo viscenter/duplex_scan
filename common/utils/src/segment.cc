@@ -301,16 +301,6 @@ int main ( int argc, char **argv )
 
 void update(int val)
 {
-	static bool computing = false;
-	
-	if(computing )
-	{
-		//cout <<"\nComputing previous";
-		return;
-	}
-	else
-		computing = true;
-
 	if(roiChanged)
 	{
 			cvSetImageROI(im, ROI);
@@ -363,8 +353,6 @@ void update(int val)
 #endif
 
 	cvShowImage( win.c_str(), dim );
-	//cout <<" done";
-	computing = false;
 }
 
 void onMouse(int event, int x, int y, int flags,  void *param)
