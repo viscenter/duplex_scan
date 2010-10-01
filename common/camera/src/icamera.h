@@ -107,14 +107,17 @@
   	<p>
 	<i>
 	<code>
-	<br />variance.pfm  - is the variation of the opacity of the backlit document and the back light (floating point image)
-	<br />backText.pfm  - is the variation without the fore lit document which should contain the rear text(floating point image)
+	<br /> This will output the following files:
+	<ul>
+	<li>variance(Abs).pfm  - is the variation of the opacity of the backlit document and the back light (floating point image) (Abs is the absolute difference)</li>
+	<li>backTextEnhanced(Abs).pfm  - is the variation without the fore lit document which should contain the rear text(floating point image) (Abs is the absolute difference)</li>
+	</ul>
 	</code>
 	</i>
 	</p>
 
   @subsection stat_seg Segmentation 
-  This process will use the images from the previous step to allow the user to specify thresholds using different thresholding methods to cleanly extract the back text producing a mask to be used with the original document to specify the back text
+  This process will use the images from the previous step to allow the user to specify thresholds using different thresholding methods (pyramid segmentation is commented out because of memory issue will large files) to cleanly extract the back text producing a mask to be used with the original document to specify the back text
   <code>
   <br />common/utils/segment -h
   <br />Allowed options:
@@ -132,8 +135,11 @@
   <br />-t [ --threshold-segmentation ]          bi-level thresholding for image 
                                            segmentation
   </code>
+
+	<br /> You can specify ROI's on the doc and input-file images  
+	<br /> To skip specifing values interactively, provide both low/high thresholds with respect to the threshold resolution
   @subsection stat_backText Back text extraction 
-  This process apply the mask that was generated from the previous code specifying the parts of the document that are back text only. The mask(grey level image) can be hand tweaked to get better results)
+  This process applies the mask that was generated from the previous code specifying the parts of the document that are back text only. The mask(grey level image) can be hand tweaked to get better results)
   <code>
   <br />common/utils/backText
   <br />backText [document] [mask] [outputfile]

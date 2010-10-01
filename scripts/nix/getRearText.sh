@@ -61,7 +61,7 @@ if [ "$?" != "0" ]; then
 	exit -1
 fi
 
-$SEGMENTER -f variance.pfm  -d $DIR/backlitDoc.raw -o threshold.png 
+$SEGMENTER -f backTextEnhanced.pfm  -d $DIR/backlitDoc.raw -o threshold.png 
 
 if [ "$?" != "0" ]; then
 	echo "Failed to run segmentation code"
@@ -74,3 +74,5 @@ if [ "$?" != "0" ]; then
 	echo "Failed to extract back text"
 	exit -1
 fi
+
+echo "backText saved as extractedBackText.png"
