@@ -61,18 +61,25 @@ if [ "$?" != "0" ]; then
 	exit -1
 fi
 
-$SEGMENTER -f backTextEnhanced.pfm  -d $DIR/backlitDoc.raw -o threshold.png 
+echo "Specify values that isolate only the back text"
+$SEGMENTER -f backTextEnhanced.pfm  -d $DIR/backlitDoc.raw -o backgroundthreshold.png 
 
 if [ "$?" != "0" ]; then
-	echo "Failed to run segmentation code"
+	echo "Failed to run segmentation code for background threshold"
 	exit -1
 fi
 
-$BACKTEXTER $DIR/backlitDoc.raw threshold.png extractedBackText.png
+echo "Specify values that isolate only the foreground text"
+$SEGMENTER -f backTextEnhanced.pfm  -d $DIR/backlitDoc.raw -o foregroundthreshold.png 
+
+if [ "$?" != "0" ]; then
+	echo "Failed to run segmentation code for foreground threshold"
+	exit -1
+fi
+
+$BACKTEXTER -d $DIR/backlitDoc.raw -f foregroundthreshold.png -b backgroundthreshold.png -o extractedBackText
 
 if [ "$?" != "0" ]; then
 	echo "Failed to extract back text"
 	exit -1
 fi
-
-echo "backText saved as extractedBackText.png"
