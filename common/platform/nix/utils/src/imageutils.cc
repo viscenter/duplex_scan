@@ -79,6 +79,7 @@ namespace viz
 		if(0 == im || filename.empty())
 		{
 			std::cerr<<"\ninvalid parameters";
+			return false;
 		}
 		std::ofstream fout(filename.c_str(), std::ios::binary| std::ios::trunc);
 		if(!fout.good())
@@ -144,7 +145,7 @@ namespace viz
 
 		if(system(cmd.str().c_str()) != 0)
 		{
-			std::cerr<<"\nFailed to run ufraw-batch on raw image";
+			//std::cerr<<"\nFailed to run ufraw-batch on raw image";
 		}
 		else
 		{
@@ -152,7 +153,7 @@ namespace viz
 			if(!im)
 			{
 				im = 0;
-				std::cerr<<"\nFailed convert to IplImage";
+				//std::cerr<<"\nFailed convert to IplImage";
 			}
 			else
 			{
