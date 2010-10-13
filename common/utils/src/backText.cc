@@ -97,17 +97,42 @@ int main(int argc, char** argv)
 	{
 		IplConvKernel* k =cvCreateStructuringElementEx(3, 3, 1, 1, CV_SHAPE_RECT);
 		IplImage *morph = cvCloneImage(fmask);
+		cvZero(morph);
 		IplImage *dia = cvCloneImage(fmask);
-		cvMorphologyEx(fmask, morph, 0, k, CV_MOP_OPEN, 4);
-		cvSaveImage("foremopOpen.png", morph);
-		cvDilate(morph, dia, 0, 4); 
-		cvSaveImage("foremopDia.png", dia);
+		IplImage *tmp2 = cvCloneImage(fmask);
+		cvMorphologyEx(fmask, morph, 0, k, CV_MOP_CLOSE, 10);
+		//cvSaveImage("foremopClose.png", morph);
+		cvSaveImage("_001.png", morph);
+		cvDilate(morph, dia, 0, 13); 
 
-		cvNot(dia,morph);
+		//only foregorund
+		cvOr(dia, fmask, tmp2);
+		//cvSaveImage("foreEx.png", tmp2);
+		cvSaveImage("_002.png", tmp2);
 
-		cvAnd(bmask, morph, tmp);
-		cvSaveImage("andedMask.png", tmp);
-		cvCopy(doc, result, tmp);
+		//foreground in background mask
+		cvZero(tmp);
+		cvCopy(bmask, tmp, tmp2);
+		//cvSaveImage("foreExInBack.png", tmp);
+		cvSaveImage("_003.png", tmp);
+
+
+		//remove foreground from back
+		cvZero(morph);
+		cvXor(bmask, tmp, morph);
+		//cvSaveImage("backSubForeExInBack.png", morph);
+		cvSaveImage("_004.png", morph);
+
+		//morph results
+		cvZero(tmp);
+		cvMorphologyEx(morph, tmp, 0, k, CV_MOP_CLOSE, 4);
+		//cvSaveImage("backSubForeExInBackOPENED.png", tmp);
+		cvSaveImage("_005.png", tmp);
+		cvCopy(tmp, morph);
+
+
+		cvZero(result);
+		cvCopy(doc, result, morph);
 		
 	}
 	else
