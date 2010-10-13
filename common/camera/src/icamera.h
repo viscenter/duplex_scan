@@ -117,7 +117,7 @@
 	</p>
 
   @subsection stat_seg Segmentation 
-  This process will use the images from the previous step to allow the user to specify thresholds using different thresholding methods (pyramid segmentation is commented out because of memory issue will large files) to cleanly extract the back text producing a mask to be used with the original document to specify the back text
+  This process will use the images from the previous step to allow the user to specify thresholds using different thresholding methods (pyramid segmentation is commented out because of memory issue will large files) to cleanly extract the back text producing a mask to be used with the original document to specify the back text. This has to be run twice specifying thresholded masks for the foreground text (duruing testing this was the obtained cleanly) and the background text ( during testing it was hard to isolate the backtext only.)
   <code>
   <br />common/utils/segment -h
   <br />Allowed options:
@@ -139,13 +139,22 @@
 	<br /> You can specify ROI's on the doc and input-file images  
 	<br /> To skip specifing values interactively, provide both low/high thresholds with respect to the threshold resolution
   @subsection stat_backText Back text extraction 
-  This process applies the mask that was generated from the previous code specifying the parts of the document that are back text only. The mask(grey level image) can be hand tweaked to get better results)
+  This process applies  masks that was generated from the previous code specifying the parts of the document that are back text and foreground text. The masks(grey level image) can be hand tweaked to get better results)
   <code>
-  <br />common/utils/backText
-  <br />backText [document] [mask] [outputfile]
-  <br /> [document]    backlit document 
-  <br /> [mask]        mask file 
-  <br /> [outputfile]  output file 
+  <br />common/utils/backText -h
+  <br />Allowed options:
+  <br />-h [ --help ]                help message
+  <br />-d [ --document ] arg        backlit document
+  <br />-b [ --background-mask ] arg background mask file
+  <br />-f [ --foreground-mask ] arg [foreground mask file]
+  <br />-o [ --output-file ] arg     output filename (don't include extension)
+  <br />--bpp arg (=16)              bits per pixel for raw
+  <br />--flip arg (=0)              flip the final result:
+  <br />                             0 - x-axis
+  <br />                             > 0 - y-axis
+  <br />                             < 0 x/y-axis
+  <br />--no-flip                    do not flip the result
+
   </code>
 	
 */
